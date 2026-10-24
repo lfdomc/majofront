@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { api } from "./api";
 import { unidad } from "./format";
 import type { UnidadInfo } from "./types";
 
@@ -174,9 +175,17 @@ export function SubirImagen({ url, onSubir, onQuitar, texto = "Subir foto", redo
 }
 
 /** Categoría: se elige de una lista; la última opción permite escribir una nueva. */
-export function CategoriaSelect({ value, opciones, onChange }: { value: string; opciones: string[]; onChange: (v: string) => void }) {
-  const lista = [...new Set([...opciones, value].map((x) => (x || "").trim()).filter(Boolean))]
+export function CategoriaSelect({ value, opciones, onChange, tipo }: {
+  value: string; opciones: string[]; onChange: (v: string) => void; tipo?: "producto" | "subreceta" | "ingrediente";
+}) {
+  const [guardadas, setGuardadas] = useState<string[]>([]);
+  useEffect(() => {
+    if (!tipo) return;
+    api<{ nombre: string }[]>(`/api/categorias/${tipo}`).then((l) => setGuardadas(l.map((x) => x.nombre))).catch(() => {});
+  }, [tipo]);
+  const extra = [...opciones, value].map((x) => (x || "").trim()).filter((x) => x && !guardadas.includes(x))
     .sort((a, b) => a.localeCompare(b, "es"));
+  const lista = [...new Set([...guardadas, ...extra])];
   const [nueva, setNueva] = useState(false);
   const [txt, setTxt] = useState("");
   if (nueva) {

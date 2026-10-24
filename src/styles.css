@@ -350,3 +350,16 @@ input[type="checkbox"], input[type="radio"] { width: auto; accent-color: var(--h
 .nota-tabla { margin: 10px 2px 0; font-size: 13px; color: var(--tenue); max-width: 90ch; }
 .cat-nueva { display: flex; gap: 6px; } .cat-nueva input { flex: 1; min-width: 0; } .cat-nueva .btn { padding-left: 12px; padding-right: 12px; }
 .error-texto { color: var(--peligro); font-size: 14px; }
+
+/* Categorías */
+.cat-crear { display: flex; gap: 8px; margin: 18px 0 16px; max-width: 560px; }
+.cat-crear input { flex: 1; min-width: 0; }
+.cat-orden { display: flex; gap: 4px; }
+.btn-mini { width: 30px; height: 28px; border: 1px solid var(--linea); border-radius: 7px; background: var(--superficie); color: var(--tinta); font-size: 11px; cursor: pointer; }
+.btn-mini:hover:not(:disabled) { border-color: var(--hoja); }
+.btn-mini:disabled { opacity: .3; cursor: default; }
+.cat-acciones { display: inline-flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+.cat-tabla td { vertical-align: middle; }
+.modal select { width: 100%; margin: 6px 0 4px; }
+@media (max-width: 640px) { .cat-crear { flex-direction: column; } }
+.cat-tabla th.n { text-align: right; }

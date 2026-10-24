@@ -185,7 +185,7 @@ export default function RecetaEditor() {
               </select>
             </Campo>
             <Campo label="Categoría">
-              <CategoriaSelect value={r.categoria} onChange={(v) => set({ categoria: v })}
+              <CategoriaSelect value={r.categoria} onChange={(v) => set({ categoria: v })} tipo={r.tipo}
                                opciones={recs.filter((x) => x.tipo === r.tipo).map((x) => x.categoria)} />
             </Campo>
             <Campo label="Rinde" ayuda={esProducto ? "Cuántos productos salen de esta receta" : "Cuánto produce la preparación"}>

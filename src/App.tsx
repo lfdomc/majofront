@@ -11,6 +11,7 @@ import Proveedores from "./pages/Proveedores";
 import Ajustes from "./pages/Ajustes";
 import MenuPublico from "./pages/MenuPublico";
 import Negocio from "./pages/Negocio";
+import Categorias from "./pages/Categorias";
 
 function Shell() {
   const { usuario, cargando, salir, config } = useApp();
@@ -27,6 +28,7 @@ function Shell() {
           <NavLink to="/admin" end>Inicio</NavLink>
           <NavLink to="/admin/recetas">Productos y recetas</NavLink>
           <NavLink to="/admin/ingredientes">Ingredientes</NavLink>
+          <NavLink to="/admin/categorias">Categorías</NavLink>
           <NavLink to="/admin/proveedores">Proveedores</NavLink>
           <NavLink to="/admin/negocio">Menú y negocio</NavLink>
           <NavLink to="/admin/ajustes">Ajustes</NavLink>
@@ -46,6 +48,7 @@ function Shell() {
           <Route path="/ingredientes/nuevo" element={<IngredienteEditor />} />
           <Route path="/ingredientes/:id" element={<IngredienteEditor />} />
           <Route path="/proveedores" element={<Proveedores />} />
+          <Route path="/categorias" element={<Categorias />} />
           <Route path="/ajustes" element={<Ajustes />} />
           <Route path="/negocio" element={<Negocio />} />
           <Route path="*" element={<Navigate to="/admin" />} />

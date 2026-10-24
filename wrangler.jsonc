@@ -1,0 +1,10 @@
+{
+  // Publica el sitio (carpeta dist que genera "npm run build") como Worker de Cloudflare
+  "name": "majofront",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // Cualquier ruta (/admin, /menu…) abre la app; React decide qué mostrar
+    "not_found_handling": "single-page-application"
+  }
+}

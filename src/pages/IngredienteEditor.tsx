@@ -111,7 +111,7 @@ export default function IngredienteEditor() {
         <section className="editor-principal">
           <div className="rejilla-campos">
             <Campo label="Categoría">
-              <CategoriaSelect value={d.categoria} onChange={(v) => set({ categoria: v })} opciones={cats} />
+              <CategoriaSelect value={d.categoria} onChange={(v) => set({ categoria: v })} opciones={cats} tipo="ingrediente" />
             </Campo>
             <Campo label="Unidad más pequeña" ayuda="En qué se mide al usarlo en recetas">
               <select value={d.unidad_base} onChange={(e) => set({ unidad_base: e.target.value as any })}>
