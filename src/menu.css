@@ -1,0 +1,273 @@
+/* Menú público. El color de marca llega en --marca; todo lo demás se tiñe a partir de él. */
+.mp {
+  --fondo: color-mix(in oklch, var(--marca) 4%, #fffdfd);
+  --superficie: color-mix(in oklch, var(--marca) 1.5%, #fffefe);
+  --tinta: color-mix(in oklch, var(--marca) 16%, #1b1517);
+  --tenue: color-mix(in oklch, var(--marca) 22%, #5c5256);
+  --linea: color-mix(in oklch, var(--marca) 16%, #e9e4e5);
+  --marca-suave: color-mix(in oklch, var(--marca) 13%, #fffefe);
+  --marca-honda: color-mix(in oklch, var(--marca) 80%, #120a0d);
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --entra: cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--fondo);
+  color: var(--tinta);
+  min-height: 100vh;
+  font: 16px/1.55 "Public Sans", "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.mp a { color: inherit; }
+.mp h1, .mp h2, .mp h3 { text-wrap: balance; }
+.mp p { text-wrap: pretty; }
+.mp-estado { min-height: 100vh; display: grid; place-items: center; align-content: center; gap: 14px; color: #6E6266; font-family: "Public Sans", sans-serif; padding: 24px; text-align: center; }
+.mp-cargando { width: 34px; height: 34px; border-radius: 50%; border: 3px solid #eadfe2; border-top-color: #D94C72; animation: mp-gira 0.8s linear infinite; }
+@keyframes mp-gira { to { transform: rotate(360deg); } }
+
+/* ------------------------------------------------ portada con paisaje */
+.mp-hero {
+  --alto-paisaje: 132px;
+  --nombre-tam: clamp(56px, 14vw, 104px);
+  position: relative; overflow: hidden; color: #fff;
+  background: linear-gradient(180deg, color-mix(in oklch, var(--marca) 70%, #120a0d) 0%, var(--marca-honda) 45%, color-mix(in oklch, var(--marca) 92%, #ffb36b) 100%);
+}
+.mp-hero-in {
+  position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 18px 20px calc(var(--alto-paisaje) - 14px);
+  display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 14px; row-gap: 16px; align-items: center;
+}
+.mp-hero-in .mp-acciones { grid-column: 1 / -1; margin-top: 0; }
+.mp-logo {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: #fff; display: block;
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--marca) 55%, #fff), 0 12px 30px -10px rgba(0,0,0,0.45);
+}
+.mp-lugar {
+  display: flex; width: fit-content; align-items: center; gap: 6px; margin: 0 0 6px; padding: 4px 11px 4px 8px; border-radius: 999px;
+  background: rgba(255,255,255,0.14); font-size: 13px; font-weight: 600; backdrop-filter: blur(4px);
+}
+
+/* Paisaje (SVG): Tilarán con molinos, laguna y guanacaste */
+.ps { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: var(--alto-paisaje); display: block; }
+.ps-sol { fill: color-mix(in oklch, var(--marca) 25%, #ffd27a); }
+.ps-sol-halo { fill: color-mix(in oklch, var(--marca) 30%, #ffd27a); opacity: 0.22; }
+.ps-nube { fill: rgba(255, 255, 255, 0.16); }
+.ps-loma-1 { fill: color-mix(in oklch, var(--marca) 62%, #f2c49b); }
+.ps-laguna { fill: color-mix(in oklch, var(--marca) 18%, #4cb0c4); }
+.ps-brillos rect { fill: rgba(255, 255, 255, 0.5); }
+.ps-loma-2 { fill: color-mix(in oklch, var(--marca) 12%, #5c9a52); }
+.ps-pasto { fill: color-mix(in oklch, var(--marca) 10%, #2f6a38); }
+.ps-copa, .ps-tronco-relleno { fill: color-mix(in oklch, var(--marca) 12%, #1f4626); }
+.ps-tronco { fill: none; stroke: color-mix(in oklch, var(--marca) 12%, #1f4626); stroke-width: 7; stroke-linecap: round; }
+.ps-torre, .ps-aspa, .ps-cubo { fill: rgba(255, 255, 255, 0.94); }
+.ps-rotor { transform-box: view-box; transform-origin: 0 0; animation: ps-gira linear infinite; }
+.ps-nubes { animation: ps-viento 50s ease-in-out infinite alternate; }
+.ps-brillos { animation: ps-brillo 6s ease-in-out infinite alternate; }
+@keyframes ps-gira { to { transform: rotate(360deg); } }
+@keyframes ps-viento { to { transform: translateX(90px); } }
+@keyframes ps-brillo { from { transform: translateX(-14px); opacity: 0.5; } to { transform: translateX(14px); opacity: 1; } }
+
+@media (min-width: 900px) {
+  .mp-hero { --alto-paisaje: calc(100vw * 212 / 1440); }
+  .mp-hero-in { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 22px; padding: 22px 24px calc(var(--alto-paisaje) - 30px); }
+  .mp-hero-in .mp-acciones { grid-column: auto; justify-content: flex-end; align-self: center; }
+  .mp-logo { width: 96px; height: 96px; }
+}
+.mp-hero h1 {
+  font: 400 var(--nombre-tam)/1 "Allura", "Great Vibes", cursive; letter-spacing: 0; margin: 0;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.18);
+}
+.mp-ranura { display: inline-block; overflow: hidden; padding: 0.06em 0.18em 0.3em 0.06em; margin: -0.06em -0.18em -0.3em -0.06em; vertical-align: bottom; }
+.mp-palabra { display: inline-block; will-change: transform; }
+.mp-eslogan { font-size: 17px; margin: 8px 0 0; max-width: 38ch; color: color-mix(in oklch, var(--marca) 8%, #fff); }
+.mp-horario { font-size: 14.5px; margin: 6px 0 0; color: color-mix(in oklch, var(--marca) 22%, #fff); }
+.mp-acciones { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.mp-btn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border-radius: 999px;
+  border: 2px solid color-mix(in oklch, var(--marca) 30%, #fff); color: #fff !important; text-decoration: none; font-weight: 700; font-size: 15px;
+  transition: background-color 0.2s var(--entra);
+}
+.mp-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.mp-btn-lleno { background: #fff; color: var(--marca-honda) !important; border-color: #fff; }
+.mp-btn-lleno:hover { background: color-mix(in oklch, var(--marca) 8%, #fff); }
+.mp a:focus-visible { outline: 3px solid var(--marca); outline-offset: 3px; border-radius: 6px; }
+.mp-hero a:focus-visible { outline-color: #fff; }
+
+/* ------------------------------------------------ categorías */
+.mp-chips {
+  position: sticky; top: 0; z-index: 10; display: flex; gap: 6px; overflow-x: auto; padding: 10px 20px;
+  background: color-mix(in oklch, var(--fondo) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--linea); scrollbar-width: none;
+}
+.mp-chips::-webkit-scrollbar { display: none; }
+.mp-chips a {
+  position: relative; flex: none; text-decoration: none; padding: 9px 16px; border-radius: 999px; font-weight: 700; font-size: 14px;
+  color: var(--tenue); transition: color 0.2s var(--entra);
+}
+.mp-chips a.activa { color: #fff; }
+.mp-chip-fondo { position: absolute; inset: 0; border-radius: 999px; background: var(--tinta); }
+.mp-chip-texto { position: relative; }
+
+/* ------------------------------------------------ productos */
+.mp-cuerpo { max-width: 1120px; margin: 0 auto; padding: 8px 20px 64px; }
+.mp-intro { font-size: 17px; color: var(--tenue); max-width: 58ch; margin: 28px 0 0; }
+.mp-vacio { color: var(--tenue); padding: 56px 0; text-align: center; }
+.mp-cat { scroll-margin-top: 64px; padding-top: 36px; }
+.mp-cat-cabeza { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 18px; border-bottom: 2px solid var(--tinta); padding-bottom: 8px; }
+.mp-cat h2 { font: 800 clamp(30px, 7vw, 44px)/1 var(--display); letter-spacing: -0.03em; margin: 0; }
+.mp-cat-conteo { font-size: 14px; color: var(--tenue); white-space: nowrap; }
+
+.mp-galeria { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
+.mp-tarjeta { background: var(--superficie); border-radius: 22px; overflow: hidden; box-shadow: 0 1px 0 var(--linea), 0 10px 30px -18px color-mix(in oklch, var(--marca) 45%, transparent); }
+.mp-foto-marco { overflow: hidden; }
+.mp-tarjeta img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--marca-suave); }
+.mp-tarjeta-texto { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 6px; }
+.mp-fila-titulo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.mp-tarjeta h3 { font: 700 21px/1.15 var(--display); letter-spacing: -0.015em; margin: 0; }
+.mp-precio {
+  flex: none; font: 800 17px/1 var(--display); color: var(--marca-honda); background: var(--marca-suave);
+  padding: 9px 13px; border-radius: 999px; white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.mp-tarjeta p, .mp-carta p { margin: 0; color: var(--tenue); font-size: 15px; }
+.mp-pedir {
+  align-self: flex-start; display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 700; color: var(--marca-honda) !important;
+  text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; text-decoration-color: color-mix(in oklch, var(--marca) 40%, transparent);
+  transition: text-decoration-color 0.2s var(--entra);
+}
+.mp-pedir:hover { text-decoration-color: var(--marca); }
+
+/* Productos sin foto: como una carta impresa, nombre … precio */
+.mp-carta { list-style: none; margin: 8px 0 0; padding: 0; }
+.mp-carta li { padding: 16px 0; border-bottom: 1px solid var(--linea); display: flex; flex-direction: column; gap: 4px; }
+.mp-galeria + .mp-carta { margin-top: 20px; }
+.mp-linea { display: flex; align-items: baseline; gap: 10px; }
+.mp-linea h3 { font: 700 19px/1.2 var(--display); letter-spacing: -0.01em; margin: 0; }
+.mp-puntos { flex: 1; min-width: 20px; border-bottom: 2px dotted color-mix(in oklch, var(--marca) 35%, var(--linea)); transform: translateY(-5px); }
+.mp-precio-linea { font: 800 18px/1 var(--display); color: var(--marca-honda); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mp-carta .mp-pedir { margin-top: 2px; }
+
+/* ------------------------------------------------ WhatsApp flotante */
+.mp-flotante {
+  position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 20;
+  display: grid; place-items: center; width: 60px; height: 60px; border-radius: 50%;
+  background: #1A9E50; color: #fff !important; text-decoration: none;
+  box-shadow: 0 10px 28px -8px rgba(15, 70, 38, 0.6);
+}
+.mp-flotante:hover { background: #158544; }
+.mp-flotante svg { flex: none; }
+.mp-flotante-texto { white-space: nowrap; overflow: hidden; display: inline-block; padding-right: 4px; }
+
+/* ------------------------------------------------ pie */
+.mp-pie { background: var(--tinta); color: color-mix(in oklch, var(--marca) 6%, #f1ecee); overflow: hidden; }
+.mp-pie-in { max-width: 1120px; margin: 0 auto; padding: 44px 20px 104px; }
+.mp-pie h2 { font: 800 34px var(--display); letter-spacing: -0.02em; margin: 0 0 22px; color: #fff; }
+.mp-pie dl { margin: 0; display: grid; gap: 18px; }
+.mp-pie dt { font-size: 13px; color: color-mix(in oklch, var(--marca) 25%, #b1a6aa); }
+.mp-pie dd { margin: 3px 0 0; font-size: 16px; }
+.mp-pie a { color: #fff; text-underline-offset: 3px; }
+.mp-redes { list-style: none; padding: 0; margin: 28px 0 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.mp-redes a {
+  display: flex; flex-direction: column; padding: 11px 18px; border-radius: 16px; background: rgba(255, 255, 255, 0.07);
+  text-decoration: none; min-width: 150px; transition: background-color 0.2s var(--entra);
+}
+.mp-redes a:hover { background: rgba(255, 255, 255, 0.13); }
+.mp-redes b { font-size: 14px; }
+.mp-redes span { font-size: 13px; color: color-mix(in oklch, var(--marca) 15%, #cfc4c8); }
+.mp-despedida {
+  font: 400 clamp(64px, 16vw, 150px)/1.05 "Allura", "Great Vibes", cursive; margin: 36px 0 0; padding-bottom: 0.12em;
+  color: color-mix(in oklch, var(--marca) 70%, #fff);
+}
+.mp-legal { font-size: 12.5px; color: color-mix(in oklch, var(--marca) 20%, #968a8f); margin: 18px 0 0; }
+
+@media (min-width: 640px) {
+  .mp-carta { columns: 2; column-gap: 40px; }
+  .mp-carta li { break-inside: avoid; }
+  .mp-pie dl { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 960px) {
+  .mp-chips { justify-content: center; }
+  .mp-pie dl { grid-template-columns: repeat(3, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp *, .mp *::before, .mp *::after { transition: none !important; animation-duration: 0s !important; }
+}
+.mp-legal .mp-admin { color: inherit !important; margin-left: 12px; text-decoration: underline; text-underline-offset: 3px; opacity: 0.8; }
+.mp-legal .mp-admin:hover { opacity: 1; }
+
+/* Imágenes generadas (cuadradas, ya traen nombre y precio) */
+/* Nunca se recortan: van completas y cuadradas en cualquier tamaño de pantalla */
+.mp .mp-galeria .mp-tarjeta.es-arte img { aspect-ratio: 1 / 1 !important; height: auto; object-fit: contain; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ps-rotor, .ps-nubes, .ps-brillos { animation: none !important; }
+}
+
+.mp-oculto { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.mp-tarjeta.es-arte .mp-tarjeta-texto { padding-top: 12px; }
+
+/* Sin imagen de logo: el nombre ocupa su lugar; con gorro, el gorro se posa sobre la primera letra */
+.mp-hero-in.sin-logo { grid-template-columns: minmax(0, 1fr); }
+.mp-nombre-gorro { position: relative; display: inline-block; padding-top: calc(var(--nombre-tam) * 0.42); }
+.mp-gorro { position: absolute; left: calc(var(--nombre-tam) * -0.08); top: 0; width: calc(var(--nombre-tam) * 0.82); color: #fff; display: block; }
+.mp-gorro svg { width: 100%; height: auto; display: block; overflow: visible; }
+@media (min-width: 900px) {
+  .mp-hero-in.sin-logo { grid-template-columns: minmax(0, 1fr) auto; }
+}
+
+/* La frase corta va pegada al nombre manuscrito (la «j» deja mucho aire abajo) */
+.mp-hero-texto h1 + div .mp-eslogan, .mp-nombre-gorro + div .mp-eslogan { margin-top: calc(var(--nombre-tam) * -0.2); }
+
+/* Celular: nombre casi de lado a lado, elementos más grandes y portada más baja */
+@media (max-width: 899px) {
+  .mp-hero { --nombre-tam: min(18.6vw, 104px); --alto-paisaje: 118px; }
+  .mp-hero h1 { white-space: nowrap; }
+  .mp-hero-in { padding: 12px 16px calc(var(--alto-paisaje) - 24px); row-gap: 12px; }
+  .mp-lugar { font-size: 14px; padding: 5px 12px 5px 9px; margin-bottom: 2px; }
+  .mp-eslogan { font-size: 20px; font-weight: 600; }
+  .mp-horario { font-size: 15px; }
+  .mp-hero-in .mp-acciones { gap: 8px; }
+  .mp-hero-in .mp-acciones .mp-btn { flex: 1 1 auto; min-height: 52px; font-size: 15.5px; padding: 0 14px; white-space: nowrap; }
+  .mp-logo { width: 72px; height: 72px; }
+  .mp-hero-in .mp-btn:not(.mp-btn-lleno) { background: color-mix(in oklch, var(--marca-honda) 70%, transparent); backdrop-filter: blur(3px); }
+}
+
+/* ------------------------------------------------ menú de hamburguesa (celular) */
+.mp-hamburguesa, .mp-velo, .mp-panel { display: none; }
+@media (max-width: 899px) {
+  .mp-hero-in .mp-acciones { display: none; }
+  .mp-hero-in .mp-acciones .mp-btn-lleno { flex: 1 1 100%; min-height: 54px; font-size: 17px; }
+  .mp-hamburguesa {
+    display: flex; flex-direction: column; justify-content: center; gap: 5px; position: absolute; top: 12px; right: 14px; z-index: 3;
+    width: 46px; height: 46px; padding: 0 12px; border: 0; border-radius: 14px; cursor: pointer;
+    background: rgba(255, 255, 255, 0.16); backdrop-filter: blur(6px);
+  }
+  .mp-hamburguesa span { display: block; height: 2.5px; border-radius: 2px; background: #fff; }
+  .mp-hamburguesa:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .mp-velo { display: block; position: fixed; inset: 0; z-index: 40; background: rgba(20, 8, 12, 0.5); }
+  .mp-panel {
+    display: flex; flex-direction: column; gap: 22px; position: fixed; top: 0; right: 0; bottom: 0; z-index: 41;
+    width: min(86vw, 360px); padding: 18px 20px calc(24px + env(safe-area-inset-bottom)); overflow-y: auto;
+    background: var(--fondo); color: var(--tinta); box-shadow: -18px 0 40px -20px rgba(0, 0, 0, 0.5);
+  }
+  .mp-panel-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .mp-panel-nombre { font: 400 40px/1.1 "Allura", cursive; color: var(--marca-honda); }
+  .mp-cerrar { width: 44px; height: 44px; border-radius: 12px; border: 0; background: var(--marca-suave); color: var(--marca-honda); font-size: 28px; line-height: 1; cursor: pointer; }
+  .mp-panel-grupo { display: flex; flex-direction: column; }
+  .mp-panel-titulo { font-size: 13px; font-weight: 700; color: var(--tenue); margin-bottom: 4px; }
+  .mp-panel-grupo a {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 13px 2px; text-decoration: none;
+    font: 700 19px/1.2 var(--display); border-bottom: 1px solid var(--linea); color: var(--tinta) !important;
+  }
+  .mp-panel-grupo a small { font: 500 13.5px "Public Sans", sans-serif; color: var(--tenue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55%; }
+  .mp-panel-grupo a:active { background: var(--marca-suave); }
+  .mp-panel-horario { margin: 0; font-size: 14px; color: var(--tenue); }
+  .mp-hero-texto { padding-right: 0; }
+  .mp-lugar { margin-right: 56px; }
+}
+
+/* Galería: todas las tarjetas del mismo tamaño, en filas, y la última fila centrada */
+.mp .mp-galeria { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 20px; }
+.mp .mp-galeria > .mp-tarjeta { flex: 0 0 100%; max-width: 440px; }
+@media (min-width: 640px) {
+  .mp .mp-galeria > .mp-tarjeta { flex-basis: calc((100% - 20px) / 2); }
+}
+@media (min-width: 960px) {
+  .mp .mp-galeria > .mp-tarjeta { flex-basis: calc((100% - 40px) / 3); }
+}
+.mp-version { margin-left: 8px; opacity: 0.55; }
