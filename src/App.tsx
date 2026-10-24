@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { Cargando } from "./components";
 import { AppProvider, useApp } from "./store";
@@ -15,6 +16,7 @@ import Categorias from "./pages/Categorias";
 
 function Shell() {
   const { usuario, cargando, salir, config } = useApp();
+  useEffect(() => { document.title = `Costeo · ${config?.nombre_negocio || "Administración"}`; }, [config?.nombre_negocio]);
   if (cargando) return <Cargando texto="Abriendo…" />;
   if (!usuario) return <Login />;
   return (

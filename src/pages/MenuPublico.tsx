@@ -116,7 +116,8 @@ export default function MenuPublico() {
 
   const n = m.negocio;
   const modo = n.distintivo || "logo";
-  const wa = enlaceWhatsapp(n.whatsapp);
+  const saludo = `¡Hola! Quiero consultarle sobre ${n.nombre || "su menú"}`;
+  const wa = enlaceWhatsapp(n.whatsapp, saludo);
   const tel = n.telefono.replace(/[^\d+]/g, "");
   const estilo = { "--marca": /^#[0-9a-f]{6}$/i.test(n.color) ? n.color : "#D94C72" } as CSSProperties;
   const redes = ([["instagram", "Instagram"], ["facebook", "Facebook"], ["tiktok", "TikTok"]] as const)
@@ -250,7 +251,7 @@ export default function MenuPublico() {
         </main>
 
         {wa && (
-          <motion.a className="mp-flotante" href={enlaceWhatsapp(n.whatsapp, "¡Hola! Tengo una consulta.")!} target="_blank" rel="noopener"
+          <motion.a className="mp-flotante" href={wa!} target="_blank" rel="noopener"
             aria-label={`Escribir por WhatsApp al ${n.whatsapp}`} layout
             initial={reduce ? false : { y: 90, opacity: 0 }} animate={{ y: 0, opacity: 1 }} whileTap={{ scale: 0.94 }}
             transition={{ type: "spring", stiffness: 260, damping: 24, delay: reduce ? 0 : 0.9 }}>
