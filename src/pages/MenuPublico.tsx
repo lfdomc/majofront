@@ -79,7 +79,14 @@ export default function MenuPublico() {
   const reduce = useReducedMotion();
 
   useEffect(() => {
-    api<Menu>("/api/publico/menu").then((d) => {
+    // Primero el menú publicado en Cloudflare R2 (no despierta al servidor); si no está, se pide al servidor.
+    const publicado = (import.meta.env.VITE_MENU_URL || "").replace(/\/$/, "");
+    const cargar = publicado
+      ? fetch(`${publicado}/menu.json`, { cache: "no-cache" })
+          .then((r) => (r.ok ? (r.json() as Promise<Menu>) : Promise.reject()))
+          .catch(() => api<Menu>("/api/publico/menu"))
+      : api<Menu>("/api/publico/menu");
+    cargar.then((d) => {
       setM(d);
       setActiva(d.categorias[0]?.nombre || "");
       document.title = `${d.negocio.nombre || "Menú"} · Menú`;

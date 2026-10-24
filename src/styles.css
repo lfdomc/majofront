@@ -349,3 +349,4 @@ input[type="checkbox"], input[type="radio"] { width: auto; accent-color: var(--h
 .tabla-productos th, .tabla-productos td { padding-left: 10px; padding-right: 10px; }
 .nota-tabla { margin: 10px 2px 0; font-size: 13px; color: var(--tenue); max-width: 90ch; }
 .cat-nueva { display: flex; gap: 6px; } .cat-nueva input { flex: 1; min-width: 0; } .cat-nueva .btn { padding-left: 12px; padding-right: 12px; }
+.error-texto { color: var(--peligro); font-size: 14px; }

@@ -62,6 +62,8 @@ export default function Ajustes() {
 
         <WhatsappNegocio admin={!!usuario?.es_admin} />
 
+        <Publicacion />
+
         {usuario?.es_admin && <Usuarios />}
 
         {usuario?.es_admin && (
@@ -203,6 +205,45 @@ function LogoNegocio({ admin }: { admin: boolean }) {
         ))}
       </div>
       {!admin && <p className="ayuda">Solo un administrador puede cambiar el logo.</p>}
+    </section>
+  );
+}
+
+type EstadoPublicacion = { activo: boolean; url: string | null; ultima: string | null; error: string | null; imagenes: number };
+
+/** El menú de clientes se publica como archivos en Cloudflare R2, para que se vea aunque el servidor esté dormido. */
+function Publicacion() {
+  const { aviso } = useApp();
+  const [e, setE] = useState<EstadoPublicacion | null>(null);
+  const [trabajando, setTrabajando] = useState(false);
+  useEffect(() => { api<EstadoPublicacion>("/api/publicacion").then(setE).catch(() => {}); }, []);
+  if (!e) return null;
+  const publicar = async () => {
+    setTrabajando(true);
+    try {
+      const r = await api<EstadoPublicacion>("/api/publicacion", { method: "POST" });
+      setE(r);
+      aviso(r.error ? "No se pudo publicar" : "Menú publicado", r.error ? "error" : undefined);
+    } catch (x: any) { aviso(x.message, "error"); } finally { setTrabajando(false); }
+  };
+  const fecha = e.ultima ? new Date(e.ultima).toLocaleString("es-CR", { dateStyle: "medium", timeStyle: "short" }) : null;
+  return (
+    <section className="bloque">
+      <h2 className="seccion">Menú publicado</h2>
+      {!e.activo ? (
+        <p className="ayuda">La publicación en Cloudflare R2 está apagada: el menú se lee directo de este servidor.
+          Para activarla, configure las variables R2_ en Railway.</p>
+      ) : (
+        <>
+          <p className="ayuda">Cada vez que guarda un cambio, el menú para clientes se vuelve a publicar solo en unos segundos.
+            Los clientes lo ven aunque este servidor esté apagado.</p>
+          <p>{fecha ? <>Última publicación: <strong>{fecha}</strong> · {e.imagenes} {e.imagenes === 1 ? "imagen" : "imágenes"}</> : "Todavía no se ha publicado."}</p>
+          {e.error && <p className="error-texto">Último error: {e.error}</p>}
+          <div className="fila-botones izquierda">
+            <button className="btn" onClick={publicar} disabled={trabajando}>{trabajando ? "Publicando…" : "Publicar ahora"}</button>
+          </div>
+        </>
+      )}
     </section>
   );
 }
