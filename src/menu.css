@@ -263,11 +263,54 @@
 
 /* Galería: todas las tarjetas del mismo tamaño, en filas, y la última fila centrada */
 .mp .mp-galeria { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 20px; }
-.mp .mp-galeria > .mp-tarjeta { flex: 0 0 100%; max-width: 440px; }
+.mp .mp-galeria > .mp-celda { flex: 0 0 100%; max-width: 440px; }
 @media (min-width: 640px) {
-  .mp .mp-galeria > .mp-tarjeta { flex-basis: calc((100% - 20px) / 2); }
+  .mp .mp-galeria > .mp-celda { flex-basis: calc((100% - 20px) / 2); }
 }
 @media (min-width: 960px) {
-  .mp .mp-galeria > .mp-tarjeta { flex-basis: calc((100% - 40px) / 3); }
+  .mp .mp-galeria > .mp-celda { flex-basis: calc((100% - 40px) / 3); }
 }
 .mp-version { margin-left: 8px; opacity: 0.55; }
+
+/* Celda de la galería: da la perspectiva; la tarjeta de adentro es la que se mueve */
+.mp-celda { perspective: 1000px; }
+.mp-celda > .mp-tarjeta { position: relative; height: 100%; transform-style: preserve-3d; will-change: transform;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease; }
+.mp-tarjeta::after { /* brillo que sigue al mouse */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,.38), rgba(255,255,255,0) 42%);
+  mix-blend-mode: soft-light; transition: opacity .35s ease;
+}
+.mp-tarjeta .mp-foto-marco, .mp-tarjeta > img { overflow: hidden; }
+.mp-tarjeta img { transition: transform .7s cubic-bezier(.2,.8,.2,1), filter .5s ease; }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .mp-celda > .mp-tarjeta:hover {
+    transform: translateY(-10px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform .18s ease-out, box-shadow .45s ease;
+    box-shadow: 0 1px 0 var(--linea), 0 30px 50px -22px color-mix(in oklch, var(--marca) 70%, transparent),
+                0 0 0 2px color-mix(in oklch, var(--marca) 22%, transparent);
+  }
+  .mp-celda > .mp-tarjeta:hover::after { opacity: 1; }
+  .mp-celda > .mp-tarjeta:hover img { transform: scale(1.045) !important; filter: saturate(1.08); }
+  .mp-celda > .mp-tarjeta:hover .mp-pedir { text-decoration-color: var(--marca); }
+}
+/* En teléfonos: un leve "hundido" al tocar */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  .mp-celda > .mp-tarjeta:active { transform: scale(.985); transition: transform .12s ease; }
+}
+
+/* Cambio de idioma */
+.mp-idioma { position: absolute; top: 16px; right: 20px; z-index: 3; display: inline-flex; align-items: center; height: 38px; padding: 0 16px;
+  border-radius: 999px; background: rgba(255,255,255,.16); backdrop-filter: blur(6px); color: #fff !important; font-weight: 700;
+  font-size: 14px; text-decoration: none; letter-spacing: .02em; transition: background .2s ease; }
+.mp-idioma:hover { background: rgba(255,255,255,.28); }
+.mp-idioma:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.mp-idioma-corto { display: none; }
+@media (max-width: 640px) {
+  .mp-idioma { top: 12px; right: 70px; height: 46px; width: 46px; padding: 0; justify-content: center; border-radius: 14px; }
+  .mp-idioma-largo { display: none; }
+  .mp-idioma-corto { display: inline; }
+  .mp-lugar { margin-right: 116px; }
+}
+.mp-resumen { margin: 22px 0 0; font-size: 13.5px; color: color-mix(in oklch, var(--marca) 25%, #b8acb1); }
+.mp-legal .mp-admin + .mp-admin { margin-left: 12px; }

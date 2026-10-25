@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
-import { Cargando, ErrorCaja } from "../components";
+import { Cargando, Descargas, ErrorCaja } from "../components";
 import { colones, colonesUnit, num, pct, unidad } from "../format";
 import type { ResumenReceta } from "../types";
 import { Margen } from "./Inicio";
@@ -39,7 +39,15 @@ export default function Recetas() {
           <h1>Productos y recetas</h1>
           <p className="sub">Los productos son lo que vende. Las sub-recetas son preparaciones (salsas, gelatina, bola de helado) que se usan como ingrediente.</p>
         </div>
-        <Link className="btn btn-primario" to={`/admin/recetas/nueva?tipo=${tipo}`}>{tipo === "producto" ? "Nuevo producto" : "Nueva sub-receta"}</Link>
+        <div className="fila-botones">
+          <Descargas opciones={tipo === "producto"
+            ? [{ texto: "Lista de productos y precios", ruta: "/api/reportes/productos" },
+               { texto: "Productos con su receta", ruta: "/api/reportes/recetas-productos" },
+               { texto: "Todas las recetas", ruta: "/api/reportes/recetas" }]
+            : [{ texto: "Sub-recetas con ingredientes", ruta: "/api/reportes/subrecetas" },
+               { texto: "Todas las recetas", ruta: "/api/reportes/recetas" }]} />
+          <Link className="btn btn-primario" to={`/admin/recetas/nueva?tipo=${tipo}`}>{tipo === "producto" ? "Nuevo producto" : "Nueva sub-receta"}</Link>
+        </div>
       </header>
       <div className="pestanas" role="tablist">
         {(["producto", "subreceta"] as const).map((t) => (

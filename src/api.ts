@@ -47,11 +47,17 @@ export async function api<T = any>(path: string, opts: { method?: string; body?:
   return res.json();
 }
 
-export async function descargar(path: string) {
-  const res = await fetch(BASE + path, { headers: { Authorization: `Bearer ${getToken()}` } });
-  if (!res.ok) throw new ApiError(res.status, "No se pudo descargar el respaldo.");
+export async function descargar(path: string, nombre = "descarga", cuerpo?: unknown) {
+  const headers: Record<string, string> = { Authorization: `Bearer ${getToken()}` };
+  if (cuerpo !== undefined) headers["Content-Type"] = "application/json";
+  const res = await fetch(BASE + path, cuerpo !== undefined ? { method: "POST", headers, body: JSON.stringify(cuerpo) } : { headers });
+  if (!res.ok) {
+    let msg = "No se pudo descargar el archivo.";
+    try { msg = (await res.json()).detail || msg; } catch { /* sin detalle */ }
+    throw new ApiError(res.status, msg);
+  }
   const blob = await res.blob();
-  const name = res.headers.get("content-disposition")?.match(/filename="?([^"]+)"?/)?.[1] || "respaldo.db";
+  const name = res.headers.get("content-disposition")?.match(/filename="?([^"]+)"?/)?.[1] || nombre;
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = name;
@@ -81,4 +87,11 @@ export async function subirArchivo<T = any>(path: string, archivo: File): Promis
     throw new ApiError(res.status, msg);
   }
   return res.json();
+}
+
+/** Imagen protegida (necesita la sesión) como URL local para mostrarla en un <img>. */
+export async function imagenPrivada(path: string): Promise<string> {
+  const res = await fetch(BASE + path, { headers: { Authorization: `Bearer ${getToken()}` } });
+  if (!res.ok) throw new ApiError(res.status, "No se pudo cargar la vista previa.");
+  return URL.createObjectURL(await res.blob());
 }

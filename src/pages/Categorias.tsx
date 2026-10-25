@@ -5,7 +5,7 @@ import { Cargando, ErrorCaja } from "../components";
 import { useApp } from "../store";
 
 type Tipo = "producto" | "subreceta" | "ingrediente";
-type Cat = { nombre: string; usos: number };
+type Cat = { nombre: string; usos: number; en?: string; en_sugerido?: string };
 
 const PESTANAS: { tipo: Tipo; titulo: string; cosa: [string, string] }[] = [
   { tipo: "producto", titulo: "Productos", cosa: ["producto", "productos"] },
@@ -61,6 +61,10 @@ export default function Categorias() {
       .catch((e) => aviso(e.message, "error"));
   };
 
+  const guardarIngles = (nombre: string, en: string) =>
+    hacer(() => api(`/api/categorias/${tipo}/ingles`, { method: "PUT", body: { nombre, en } }),
+      en ? `«${nombre}» en inglés: ${en}` : `Se usará la traducción sugerida para «${nombre}»`);
+
   const borrar = async () => {
     if (!borrando) return;
     const { cat, destino } = borrando;
@@ -77,7 +81,7 @@ export default function Categorias() {
         <div>
           <h1>Categorías</h1>
           <p className="sub">Cree, cambie el nombre, ordene o borre categorías. Al cambiar el nombre se actualizan todos los que la usan.
-            {tipo === "producto" && " El orden de aquí es el orden en que salen en el menú de clientes."}</p>
+            {tipo === "producto" && " El orden de aquí es el orden en que salen en el menú de clientes. El nombre en inglés se usa en el menú en inglés; si lo deja vacío se usa el que aparece en gris."}</p>
         </div>
       </header>
       <div className="pestanas" role="tablist">
@@ -96,7 +100,7 @@ export default function Categorias() {
         <div className="tabla-envoltura">
           <table className="tabla cat-tabla">
             <thead>
-              <tr><th style={{ width: 84 }}>Orden</th><th>Nombre</th><th className="n">En uso</th><th className="n">Acciones</th></tr>
+              <tr><th style={{ width: 84 }}>Orden</th><th>Nombre</th>{tipo === "producto" && <th>En inglés</th>}<th className="n">En uso</th><th className="n">Acciones</th></tr>
             </thead>
             <tbody>
               {lista.map((c, i) => (
@@ -118,6 +122,14 @@ export default function Categorias() {
                       </div>
                     ) : <strong>{c.nombre}</strong>}
                   </td>
+                  {tipo === "producto" && (
+                    <td>
+                      <input className="cat-en" defaultValue={c.en || ""} key={c.nombre + (c.en || "")} maxLength={80}
+                             placeholder={c.en_sugerido || "Nombre en inglés"} aria-label={`${c.nombre} en inglés`}
+                             onBlur={(e) => { const v = e.target.value.trim(); if (v !== (c.en || "")) guardarIngles(c.nombre, v); }}
+                             onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }} />
+                    </td>
+                  )}
                   <td className="n tenue">{c.usos === 0 ? "Vacía" : `${c.usos} ${c.usos === 1 ? info.cosa[0] : info.cosa[1]}`}</td>
                   <td className="n">
                     {editando?.anterior !== c.nombre && (
@@ -130,7 +142,7 @@ export default function Categorias() {
                   </td>
                 </tr>
               ))}
-              {lista.length === 0 && <tr><td colSpan={4} className="vacio">Todavía no hay categorías.</td></tr>}
+              {lista.length === 0 && <tr><td colSpan={tipo === "producto" ? 5 : 4} className="vacio">Todavía no hay categorías.</td></tr>}
             </tbody>
           </table>
         </div>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import QRCode from "qrcode";
-import { api, mediaUrl, subirArchivo } from "../api";
+import { api, descargar, imagenPrivada, mediaUrl, subirArchivo } from "../api";
 import { Campo, Cargando, ErrorCaja, SubirImagen } from "../components";
 import { colones } from "../format";
 import { useApp } from "../store";
@@ -14,11 +14,13 @@ export default function Negocio() {
   const [prods, setProds] = useState<ResumenReceta[]>([]);
   const [err, setErr] = useState("");
   const qr = useRef<HTMLCanvasElement>(null);
-  const urlMenu = `${window.location.origin}/`;
+  const [sitio, setSitio] = useState("");
+  // El QR apunta al dominio propio si está en "Sitio web"; si no, a la dirección desde donde se abrió el sistema.
+  const urlMenu = /^https?:\/\//.test(sitio) ? sitio.replace(/\/?$/, "/") : `${window.location.origin}/`;
   const admin = !!usuario?.es_admin;
 
   useEffect(() => {
-    api<N>("/api/negocio").then((d) => { setN(d); setGuardado(JSON.stringify(d)); }).catch((e) => setErr(e.message));
+    api<N>("/api/negocio").then((d) => { setN(d); setSitio(d.sitio_web || ""); setGuardado(JSON.stringify(d)); }).catch((e) => setErr(e.message));
     api<ResumenReceta[]>("/api/recetas").then((l) => setProds(l.filter((r) => r.tipo === "producto"))).catch(() => {});
   }, []);
   useEffect(() => {
@@ -35,7 +37,7 @@ export default function Negocio() {
     try {
       const { logo: _l, ...cuerpo } = n;
       const d = await api<N>("/api/negocio", { method: "PUT", body: cuerpo });
-      setN(d); setGuardado(JSON.stringify(d)); await recargarConfig(); aviso("Datos del negocio guardados");
+      setN(d); setSitio(d.sitio_web || ""); setGuardado(JSON.stringify(d)); await recargarConfig(); aviso("Datos del negocio guardados");
     } catch (e: any) { aviso(e.message, "error"); }
   };
   const logo = async (f: File) => {
@@ -106,6 +108,17 @@ export default function Negocio() {
             <textarea rows={3} value={n.descripcion} disabled={!admin} onChange={(e) => set({ descripcion: e.target.value })} />
           </Campo>
 
+          <details className="ingles" open={!!(n.eslogan_en || n.descripcion_en || n.horario_en)}>
+            <summary>Textos en inglés <span className="tenue">(para el menú en inglés en /en y para Google)</span></summary>
+            <div className="rejilla-campos">
+              {texto("eslogan_en", "Frase corta en inglés", undefined, "Fresh fruit and ice cream every day")}
+              {texto("horario_en", "Horario en inglés", undefined, "Monday to Saturday, 10 a.m. to 8 p.m.")}
+            </div>
+            <Campo label="Presentación en inglés">
+              <textarea rows={3} value={n.descripcion_en || ""} disabled={!admin} onChange={(e) => set({ descripcion_en: e.target.value })} />
+            </Campo>
+          </details>
+
           <h2 className="seccion">Contacto</h2>
           <div className="rejilla-campos">
             {texto("whatsapp", "WhatsApp", "Para el botón «Pedir por WhatsApp»", "8888-8888")}
@@ -172,6 +185,57 @@ export default function Negocio() {
           </div>
         </aside>
       </div>
+      <Impresos url={urlMenu} version={guardado} />
     </>
+  );
+}
+
+type Formato = { clave: string; nombre: string; ancho: number; alto: number; descripcion: string };
+
+/** Diseños listos para imprimir o compartir, con el QR del menú. */
+function Impresos({ url, version }: { url: string; version: string }) {
+  const { aviso } = useApp();
+  const [formatos, setFormatos] = useState<Formato[]>([]);
+  const [vistas, setVistas] = useState<Record<string, string>>({});
+  const [bajando, setBajando] = useState("");
+  useEffect(() => { api<Formato[]>("/api/impresos").then(setFormatos).catch(() => {}); }, []);
+  useEffect(() => {
+    let vivo = true;
+    const creadas: string[] = [];
+    setVistas({});
+    formatos.forEach((f) => {
+      imagenPrivada(`/api/impresos/${f.clave}?tipo=vista&url=${encodeURIComponent(url)}`)
+        .then((u) => { creadas.push(u); if (vivo) setVistas((v) => ({ ...v, [f.clave]: u })); }).catch(() => {});
+    });
+    return () => { vivo = false; creadas.forEach((u) => URL.revokeObjectURL(u)); };
+  }, [formatos, url, version]);
+  const bajar = async (f: Formato, tipo: "png" | "pdf") => {
+    setBajando(f.clave + tipo);
+    try { await descargar(`/api/impresos/${f.clave}?tipo=${tipo}&url=${encodeURIComponent(url)}`, `${f.clave}.${tipo}`); }
+    catch (e: any) { aviso(e.message, "error"); } finally { setBajando(""); }
+  };
+  if (!formatos.length) return null;
+  return (
+    <section className="bloque impresos">
+      <h2 className="seccion">Para imprimir y compartir</h2>
+      <p className="ayuda">Diseños con el código QR de su menú, su nombre, colores y contactos. Descárguelos en PDF para imprimir
+        o en imagen (PNG) para compartir. El QR lleva a <strong>{url}</strong>.</p>
+      <div className="impresos-rejilla">
+        {formatos.map((f) => (
+          <article key={f.clave} className="impreso">
+            <div className="impreso-vista">
+              {vistas[f.clave] ? <img src={vistas[f.clave]} alt={`Vista previa: ${f.nombre}`} style={{ aspectRatio: `${f.ancho} / ${f.alto}` }} />
+                : <div className="impreso-cargando" style={{ aspectRatio: `${f.ancho} / ${f.alto}` }}>Preparando…</div>}
+            </div>
+            <h3>{f.nombre}</h3>
+            <p className="ayuda">{f.descripcion}</p>
+            <div className="fila-botones izquierda">
+              <button className="btn btn-primario" onClick={() => bajar(f, "pdf")} disabled={!!bajando}>{bajando === f.clave + "pdf" ? "Preparando…" : "PDF"}</button>
+              <button className="btn" onClick={() => bajar(f, "png")} disabled={!!bajando}>{bajando === f.clave + "png" ? "Preparando…" : "Imagen PNG"}</button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }

@@ -62,6 +62,8 @@ export type Receta = {
   precio_competencia: number | null;
   notas: string;
   descripcion_menu: string;
+  nombre_en?: string;
+  descripcion_menu_en?: string;
   en_menu: boolean;
   items: Item[];
 };
@@ -107,9 +109,11 @@ export type Negocio = {
   nombre: string; eslogan: string; lugar: string; descripcion: string; telefono: string; whatsapp: string; email: string;
   direccion: string; mapa: string; horario: string; instagram: string; facebook: string; tiktok: string;
   sitio_web: string; color: string; mostrar_precios: boolean; logo: string | null; distintivo?: "logo" | "gorro" | "ninguno";
+  eslogan_en?: string; descripcion_en?: string; horario_en?: string;
 };
 
 export type MenuPublico = {
   negocio: Omit<Negocio, "mostrar_precios">;
-  categorias: { nombre: string; productos: { id: number; nombre: string; descripcion: string; precio: number | null; foto: string | null; es_arte?: boolean }[] }[];
+  categorias: { nombre: string; nombre_en?: string; productos: { id: number; nombre: string; descripcion: string; nombre_en?: string;
+    descripcion_en?: string; precio: number | null; foto: string | null; foto_en?: string | null; es_arte?: boolean }[] }[];
 };

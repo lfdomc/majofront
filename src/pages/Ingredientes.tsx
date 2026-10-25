@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
-import { Cargando, ErrorCaja } from "../components";
+import { Cargando, Descargas, ErrorCaja } from "../components";
 import { colones, colonesUnit, unidad } from "../format";
 import type { Ingrediente } from "../types";
 
@@ -27,7 +27,10 @@ export default function Ingredientes() {
           <h1>Ingredientes</h1>
           <p className="sub">Cada ingrediente guarda sus presentaciones de compra. El costo se lleva a la unidad más pequeña, ya descontada la merma.</p>
         </div>
-        <Link className="btn btn-primario" to="/admin/ingredientes/nuevo">Nuevo ingrediente</Link>
+        <div className="fila-botones">
+          <Descargas opciones={[{ texto: "Ingredientes con precios y proveedores", ruta: "/api/reportes/ingredientes" }]} />
+          <Link className="btn btn-primario" to="/admin/ingredientes/nuevo">Nuevo ingrediente</Link>
+        </div>
       </header>
       <div className="filtros">
         <input type="search" placeholder="Buscar ingrediente" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Buscar" />

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api, mediaUrl, subirArchivo } from "../api";
-import { Buscador, Campo, CategoriaSelect, Cargando, Confirmar, ErrorCaja, NumInput, SubirImagen, UnidadSelect, type Opcion } from "../components";
+import { Buscador, Campo, CategoriaSelect, Descargas, Cargando, Confirmar, ErrorCaja, NumInput, SubirImagen, UnidadSelect, type Opcion } from "../components";
 import { colones, colonesUnit, num, pct, unidad } from "../format";
 import { unidadesCompatibles, useApp } from "../store";
 import type { Calculo, Ingrediente, Item, Receta, ResumenReceta } from "../types";
@@ -254,6 +254,15 @@ export default function RecetaEditor() {
                     <textarea rows={3} maxLength={600} value={r.descripcion_menu} onChange={(e) => set({ descripcion_menu: e.target.value })} />
                   </Campo>
                   {r.en_menu && !r.precio_venta && <p className="ayuda">Sin precio de venta, el producto aparece en el menú sin precio.</p>}
+                  <details className="ingles" open={!!(r.nombre_en || r.descripcion_menu_en)}>
+                    <summary>Menú en inglés <span className="tenue">(opcional, para turistas y Google)</span></summary>
+                    <Campo label="Nombre en inglés" ayuda="Si lo deja vacío, se usa el nombre en español">
+                      <input maxLength={160} value={r.nombre_en || ""} placeholder="Ej.: Strawberries and cream" onChange={(e) => set({ nombre_en: e.target.value })} />
+                    </Campo>
+                    <Campo label="Descripción en inglés">
+                      <textarea rows={2} maxLength={600} value={r.descripcion_menu_en || ""} onChange={(e) => set({ descripcion_menu_en: e.target.value })} />
+                    </Campo>
+                  </details>
                 </div>
               </div>
               {foto && (
@@ -410,6 +419,8 @@ function ProduccionPanel({ id, unidadRinde, cambiado }: { id: string; unidadRind
       <div className="fila-botones izquierda">
         <div className="con-sufijo ancho-corto"><NumInput value={cant} onChange={setCant} ariaLabel="Cantidad a producir" /><span>{unidad(unidadRinde, cant)}</span></div>
         <button className="btn" onClick={calcular} disabled={!cant}>Calcular compras</button>
+        {res && cant ? <Descargas etiqueta="Descargar" cuerpo={{ items: [{ receta_id: Number(id), cantidad: cant }] }}
+                                  opciones={[{ texto: "Lista de compras", ruta: "/api/reportes/compras" }]} /> : null}
       </div>
       {err && <ErrorCaja msg={err} />}
       {res && (

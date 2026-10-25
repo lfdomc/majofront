@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { api } from "./api";
+import { api, descargar } from "./api";
 import { unidad } from "./format";
 import type { UnidadInfo } from "./types";
 
@@ -205,5 +205,50 @@ export function CategoriaSelect({ value, opciones, onChange, tipo }: {
       {lista.map((c) => <option key={c} value={c}>{c}</option>)}
       <option value="__nueva__">+ Nueva categoría…</option>
     </select>
+  );
+}
+
+/** Botón "Descargar" con opciones de PDF y Excel. */
+export function Descargas({ opciones, cuerpo, etiqueta = "Descargar" }: {
+  opciones: { texto: string; ruta: string }[]; cuerpo?: unknown; etiqueta?: string;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const [bajando, setBajando] = useState("");
+  const [error, setError] = useState("");
+  const caja = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!abierto) return;
+    const fuera = (e: MouseEvent) => { if (!caja.current?.contains(e.target as Node)) setAbierto(false); };
+    const tecla = (e: KeyboardEvent) => { if (e.key === "Escape") setAbierto(false); };
+    document.addEventListener("mousedown", fuera); document.addEventListener("keydown", tecla);
+    return () => { document.removeEventListener("mousedown", fuera); document.removeEventListener("keydown", tecla); };
+  }, [abierto]);
+  const bajar = async (ruta: string, formato: "pdf" | "xlsx") => {
+    setBajando(ruta + formato); setError("");
+    try { await descargar(`${ruta}${ruta.includes("?") ? "&" : "?"}formato=${formato}`, `reporte.${formato}`, cuerpo); setAbierto(false); }
+    catch (e: any) { setError(e.message); } finally { setBajando(""); }
+  };
+  return (
+    <div className="descargas" ref={caja}>
+      <button className="btn" aria-expanded={abierto} aria-haspopup="menu" onClick={() => setAbierto(!abierto)}>
+        {etiqueta} <span aria-hidden="true">▾</span>
+      </button>
+      {abierto && (
+        <div className="descargas-menu" role="menu">
+          {opciones.map((o) => (
+            <div key={o.ruta} className="descargas-fila">
+              <span>{o.texto}</span>
+              <div>
+                <button role="menuitem" className="btn-mini-texto" disabled={!!bajando} onClick={() => bajar(o.ruta, "pdf")}>
+                  {bajando === o.ruta + "pdf" ? "…" : "PDF"}</button>
+                <button role="menuitem" className="btn-mini-texto" disabled={!!bajando} onClick={() => bajar(o.ruta, "xlsx")}>
+                  {bajando === o.ruta + "xlsx" ? "…" : "Excel"}</button>
+              </div>
+            </div>
+          ))}
+          {error && <p className="error-texto">{error}</p>}
+        </div>
+      )}
+    </div>
   );
 }
