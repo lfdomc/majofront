@@ -75,8 +75,8 @@ export default function Recetas() {
               <th className="n">{tipo === "producto" ? "Costo por producto" : "Costo por unidad"}</th>
               {tipo === "producto" && <>
                 <th className="n">Precio de venta</th>
-                <th className="n" title="Lo que le queda por cada venta: precio sin IVA menos el costo">Ganancia por venta</th>
-                <th className="n">Margen real</th>
+                <th className="n" title="Precio sin IVA menos ingredientes">Ganancia bruta</th>
+                <th className="n" title="Además resta los costos variables y la parte de los costos fijos (Costos del negocio)">Ganancia real</th>
                 <th className="n">Precio competencia</th>
                 <th className="n" title="Su precio comparado con el de la competencia">Cuánto más barato</th>
               </>}
@@ -98,8 +98,8 @@ export default function Recetas() {
                     <CeldaPrecio valor={r.precio_venta} etiqueta={`Precio de venta de ${r.nombre}`}
                                  sugerido={r.precio_sugerido} onGuardar={(v) => guardar(r.id, { precio_venta: v })} />
                   </td>
-                  <td className="n"><Ganancia v={r.ganancia} /></td>
-                  <td className="n"><Margen v={r.margen_real_pct} /></td>
+                  <td className="n"><Ganancia v={r.ganancia} /><span className="sub-dato"><Margen v={r.margen_real_pct} /></span></td>
+                  <td className="n"><Ganancia v={r.ganancia_real ?? null} />{r.margen_neto_pct != null && <span className="sub-dato">{pct(r.margen_neto_pct)}</span>}</td>
                   <td className="n" onClick={(e) => e.stopPropagation()}>
                     <CeldaPrecio valor={r.precio_competencia} etiqueta={`Precio de la competencia para ${r.nombre}`}
                                  onGuardar={(v) => guardar(r.id, { precio_competencia: v })} />
@@ -114,7 +114,8 @@ export default function Recetas() {
       </div>
       {tipo === "producto" && (
         <p className="nota-tabla">Puede escribir el precio de venta y el de la competencia directo en la tabla; se guarda solo al salir del campo o con Enter.
-          La ganancia por venta es el precio sin IVA menos el costo. <sup>*</sup> Calculado con el precio sugerido porque el producto no tiene precio de venta.</p>
+          La ganancia bruta es el precio sin IVA menos los ingredientes; la ganancia real además resta los costos variables y la parte de los costos fijos
+          (vea <Link to="/admin/costos">Costos del negocio</Link>). <sup>*</sup> Calculado con el precio sugerido porque el producto no tiene precio de venta.</p>
       )}
     </>
   );

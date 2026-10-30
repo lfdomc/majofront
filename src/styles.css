@@ -437,3 +437,45 @@ input[type="checkbox"], input[type="radio"] { width: auto; accent-color: var(--h
 .ingles .campo + .campo, .ingles .rejilla-campos + .campo { margin-top: 10px; }
 .cat-en { width: 100%; max-width: 220px; padding: 6px 10px; }
 .cat-en::placeholder { color: #9AAA9F; }
+
+/* Costos del negocio */
+.costos-resumen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 8px 0 14px; }
+.tarjeta-dato { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); padding: 16px 18px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tarjeta-dato .cifra-valor { font-size: 30px; }
+.tarjeta-dato.positivo { border-color: color-mix(in oklch, var(--hoja) 45%, var(--linea)); background: #F1F8F3; }
+.tarjeta-dato.positivo .cifra-valor { color: var(--hoja); }
+.tarjeta-dato.negativo { border-color: color-mix(in oklch, var(--peligro) 45%, var(--linea)); background: #FDF3F2; }
+.tarjeta-dato.negativo .cifra-valor { color: var(--peligro); }
+.barra-equilibrio { margin: 0 0 26px; }
+.barra-equilibrio-pista { position: relative; height: 12px; border-radius: 99px; background: #E6ECE8; overflow: visible; }
+.barra-equilibrio-relleno { height: 100%; border-radius: 99px; background: var(--ambar); transition: width .4s ease; }
+.barra-equilibrio-relleno.ok { background: var(--hoja); }
+.barra-equilibrio-marca { position: absolute; top: -5px; width: 3px; height: 22px; background: var(--tinta); border-radius: 2px; transform: translateX(-1.5px); }
+.barra-equilibrio .ayuda { margin-top: 8px; }
+.seccion-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.costos-tabla td { vertical-align: middle; }
+.costos-tabla tr.inactivo td { opacity: .5; }
+.costo-nombre { width: 100%; min-width: 220px; border-color: transparent; background: transparent; font-weight: 600; padding: 6px 8px; }
+.costo-nombre:hover, .costo-nombre:focus { border-color: var(--linea); background: #fff; }
+.costo-nota { display: block; font-size: 12px; color: var(--tenue); padding: 0 8px; max-width: 420px; }
+.costo-monto { width: 150px; margin-left: auto; }
+.costo-aplica { width: 140px; margin-left: auto; }
+.costos-tabla select { min-width: 150px; }
+.btn-quitar { border: 0; background: transparent; color: var(--tenue); font-size: 20px; cursor: pointer; width: 32px; height: 32px; border-radius: 8px; }
+.btn-quitar:hover { background: #FDF0EF; color: var(--peligro); }
+.costo-confirmar { display: inline-flex; gap: 4px; }
+.btn-mini-texto.peligro { color: var(--peligro); border-color: color-mix(in oklch, var(--peligro) 40%, var(--linea)); }
+.ajustes-ventas { display: flex; gap: 18px; align-items: flex-end; flex-wrap: wrap; }
+.ajustes-ventas .campo { max-width: 280px; }
+.costos-prod td { white-space: nowrap; }
+.costos-prod td:first-child { white-space: normal; min-width: 180px; }
+.costos-cat { display: block; font-size: 12px; }
+.unidades-mes { width: 90px; text-align: right; padding: 6px 8px; }
+@media (max-width: 1100px) { .costos-resumen { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .costos-resumen { grid-template-columns: minmax(0, 1fr); } }
+
+.ganancia-real { border-top: 1px solid var(--linea); padding-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.resultado.desglose .total { border-top: 1px solid var(--linea); padding-top: 6px; margin-top: 2px; font-weight: 700; }
+.resultado .positivo { color: var(--hoja); }
+.sub-dato { display: block; font-size: 12px; color: var(--tenue); font-weight: 400; }
+.sub-dato .margen { font-size: 12px; }

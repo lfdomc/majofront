@@ -344,11 +344,29 @@ export default function RecetaEditor() {
                 </Campo>
                 {p?.precio_venta ? (
                   <dl className="resultado">
-                    <div><dt>Ganancia por producto</dt><dd className={p.ganancia! < 0 ? "negativo" : ""}>{colones(p.ganancia)}</dd></div>
-                    <div><dt>Margen real</dt><dd>{pct(p.margen_real_pct)}</dd></div>
-                    <div><dt>Costo sobre la venta</dt><dd>{pct(p.costo_sobre_venta_pct)}</dd></div>
+                    <div><dt>Ganancia bruta</dt><dd className={p.ganancia! < 0 ? "negativo" : ""}>{colones(p.ganancia)}</dd></div>
+                    <div><dt>Margen bruto</dt><dd>{pct(p.margen_real_pct)}</dd></div>
+                    <div><dt>Ingredientes sobre la venta</dt><dd>{pct(p.costo_sobre_venta_pct)}</dd></div>
                   </dl>
                 ) : null}
+                {esProducto && p && (p.costo_variable != null || p.precio_equilibrio != null) && (
+                  <div className="ganancia-real">
+                    <span className="cifra-label">Ganancia real por producto</span>
+                    {p.precio_venta && p.costo_variable != null ? (
+                      <dl className="resultado desglose">
+                        <div><dt>Precio{p.iva_pct ? " sin IVA" : ""}</dt><dd>{colones(p.precio_venta_sin_iva)}</dd></div>
+                        <div><dt>− Ingredientes</dt><dd>{colones(calc?.costo_por_rinde)}</dd></div>
+                        <div><dt>− Costos variables</dt><dd>{colones(p.costo_variable)}</dd></div>
+                        <div><dt>− Parte de costos fijos</dt><dd>{p.costo_fijo != null ? colones(p.costo_fijo) : "—"}</dd></div>
+                        <div className="total"><dt>Ganancia real</dt>
+                          <dd className={p.ganancia_real != null && p.ganancia_real < 0 ? "negativo" : "positivo"}>
+                            {p.ganancia_real != null ? `${colones(p.ganancia_real)} · ${pct(p.margen_neto_pct)}` : "—"}</dd></div>
+                      </dl>
+                    ) : <p className="ayuda">Ponga el precio de venta para ver la ganancia real.</p>}
+                    {p.costo_fijo == null && <p className="ayuda">Para repartir los costos fijos, ponga cuánto vende al mes en <Link to="/admin/costos">Costos del negocio</Link>.</p>}
+                    {p.precio_equilibrio != null && <p className="ayuda">Precio mínimo para no perder: <strong>{colones(p.precio_equilibrio)}</strong>.</p>}
+                  </div>
+                )}
                 <Campo label="Precio de la competencia">
                   <div className="con-prefijo"><span>₡</span><NumInput value={r.precio_competencia} allowEmpty onChange={(v) => set({ precio_competencia: v })} ariaLabel="Precio de la competencia" /></div>
                 </Campo>
@@ -387,7 +405,7 @@ function BarraPrecio({ calc, rinde }: { calc: Calculo | null; rinde: number }) {
     <figure className="barra-precio">
       <figcaption>
         De cada <b>{colones(precio)}</b>{p.precio_venta ? "" : " sugeridos"}: <b>{colones(costo)}</b> son ingredientes y{" "}
-        <b className={ganancia < 0 ? "negativo" : "ganancia"}>{colones(ganancia)}</b> {ganancia < 0 ? "de pérdida" : "quedan de ganancia"}
+        <b className={ganancia < 0 ? "negativo" : "ganancia"}>{colones(ganancia)}</b> {ganancia < 0 ? "de pérdida solo en ingredientes" : "quedan para los costos del negocio y la ganancia"}
         {iva > 0.5 && <> ({colones(iva)} de IVA)</>}.
       </figcaption>
       <div className="barra" role="img" aria-label={`Costo ${colones(costo)}, ganancia ${colones(ganancia)}`}>

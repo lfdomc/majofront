@@ -14,6 +14,7 @@ import MenuPublico from "./pages/MenuPublico";
 import Negocio from "./pages/Negocio";
 import Categorias from "./pages/Categorias";
 import Compras from "./pages/Compras";
+import CostosNegocio from "./pages/CostosNegocio";
 
 function Shell() {
   const { usuario, cargando, salir, config } = useApp();
@@ -46,6 +47,7 @@ function Shell() {
           <NavLink to="/admin" end>Inicio</NavLink>
           <NavLink to="/admin/recetas">Productos y recetas</NavLink>
           <NavLink to="/admin/ingredientes">Ingredientes</NavLink>
+          <NavLink to="/admin/costos">Costos del negocio</NavLink>
           <NavLink to="/admin/compras">Lista de compras</NavLink>
           <NavLink to="/admin/categorias">Categorías</NavLink>
           <NavLink to="/admin/proveedores">Proveedores</NavLink>
@@ -70,6 +72,7 @@ function Shell() {
           <Route path="/proveedores" element={<Proveedores />} />
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/compras" element={<Compras />} />
+          <Route path="/costos" element={<CostosNegocio />} />
           <Route path="/ajustes" element={<Ajustes />} />
           <Route path="/negocio" element={<Negocio />} />
           <Route path="*" element={<Navigate to="/admin" />} />

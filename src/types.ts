@@ -73,6 +73,7 @@ export type ResumenReceta = {
   rinde_cantidad: number; rinde_unidad: string; precio_venta: number | null; precio_competencia: number | null;
   n_items: number; costo_total: number | null; costo_por_rinde: number | null; precio_sugerido: number | null;
   margen_real_pct: number | null; ganancia: number | null; diferencia_competencia: number | null;
+  ganancia_real?: number | null; margen_neto_pct?: number | null; costo_real?: number | null; ventas_mes?: number | null;
   errores: string[]; actualizado: string | null;
   foto: string | null; en_menu: boolean;
 };
@@ -98,6 +99,9 @@ export type Calculo = {
     precio_venta: number | null; precio_venta_sin_iva: number | null; ganancia: number | null;
     margen_real_pct: number | null; costo_sobre_venta_pct: number | null; precio_competencia: number | null;
     diferencia_competencia: number | null;
+    variable_pct?: number; variable_unidad?: number; fijo_pct?: number | null; precio_equilibrio?: number | null;
+    costo_variable?: number; costo_fijo?: number | null; contribucion?: number; costo_real?: number;
+    ganancia_real?: number | null; margen_neto_pct?: number | null;
   };
 };
 
