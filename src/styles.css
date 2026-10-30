@@ -479,3 +479,28 @@ input[type="checkbox"], input[type="radio"] { width: auto; accent-color: var(--h
 .resultado .positivo { color: var(--hoja); }
 .sub-dato { display: block; font-size: 12px; color: var(--tenue); font-weight: 400; }
 .sub-dato .margen { font-size: 12px; }
+
+.aviso-costos { background: #FFF6E5; border: 1px solid #F2D49B; border-radius: var(--radio-chico); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; color: #6B4A0E; }
+.aviso-costos p { margin: 0; font-size: 13.5px; }
+.aviso-costos .btn { align-self: flex-start; }
+.aviso-costos.grande { margin: 0 0 16px; }
+.aviso-suave { margin: 0 0 14px; font-size: 13.5px; color: #6B4A0E; }
+.lateral nav a.nav-caja { background: rgba(255,255,255,.08); color: #fff; margin-bottom: 6px; font-weight: 600; }
+.lateral nav a.nav-caja:hover { background: rgba(255,255,255,.16); }
+
+/* Ventas */
+.ventas-controles { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.ventas-controles .pestanas { margin: 0; border: 0; }
+.ventas-fecha { display: flex; align-items: center; gap: 10px; }
+.ventas-fecha strong { min-width: 180px; text-align: center; }
+.ventas-fecha .btn { padding: 6px 14px; font-size: 18px; }
+.grafico-barras { display: flex; align-items: flex-end; gap: 6px; height: 220px; padding: 12px 6px 0; background: var(--superficie);
+  border: 1px solid var(--linea); border-radius: var(--radio); overflow-x: auto; }
+.barra-col { flex: 1 0 22px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 22px; }
+.barra { width: 70%; max-width: 46px; background: var(--hoja); border-radius: 6px 6px 0 0; min-height: 2px; transition: height .3s ease; }
+.barra-col:hover .barra { background: color-mix(in oklch, var(--hoja) 80%, #000); }
+.barra-valor { font-size: 10.5px; color: var(--tenue); margin-bottom: 4px; white-space: nowrap; }
+.barra-etiqueta { font-size: 11.5px; color: var(--tenue); padding: 6px 0 8px; text-transform: capitalize; }
+.ventas-tablas { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; }
+@media (max-width: 960px) { .ventas-tablas { grid-template-columns: minmax(0, 1fr); } }
+.tabla th.n { text-align: right; }

@@ -352,7 +352,20 @@ export default function RecetaEditor() {
                 {esProducto && p && (p.costo_variable != null || p.precio_equilibrio != null) && (
                   <div className="ganancia-real">
                     <span className="cifra-label">Ganancia real por producto</span>
-                    {p.precio_venta && p.costo_variable != null ? (
+                    {p.fijos_exceden_ventas ? (
+                      <div className="aviso-costos">
+                        <strong>Faltan productos vendidos al mes para repartir los costos fijos.</strong>
+                        {p.reparto === "unidad" ? (
+                          <p>Sus costos fijos son {colones(p.fijos_mes)} al mes y solo hay {num(p.unidades_reparto ?? 0, 0)} productos vendidos al mes
+                            anotados, así que a cada uno le tocarían {colones(p.fijo_unidad)}: más de lo que vale. Anote cuántos vende al mes de
+                            <strong> todos</strong> sus productos.</p>
+                        ) : (
+                          <p>Sus costos fijos son {colones(p.fijos_mes)} al mes, pero las ventas estimadas son solo {colones(p.ventas_mes)}.
+                            Así, a cada producto le tocaría cargar con más de lo que vale. Anote cuántos vende al mes de todos sus productos.</p>
+                        )}
+                        <Link className="btn" to="/admin/costos">Completar ventas al mes</Link>
+                      </div>
+                    ) : p.precio_venta && p.costo_variable != null ? (
                       <dl className="resultado desglose">
                         <div><dt>Precio{p.iva_pct ? " sin IVA" : ""}</dt><dd>{colones(p.precio_venta_sin_iva)}</dd></div>
                         <div><dt>− Ingredientes</dt><dd>{colones(calc?.costo_por_rinde)}</dd></div>
@@ -363,8 +376,16 @@ export default function RecetaEditor() {
                             {p.ganancia_real != null ? `${colones(p.ganancia_real)} · ${pct(p.margen_neto_pct)}` : "—"}</dd></div>
                       </dl>
                     ) : <p className="ayuda">Ponga el precio de venta para ver la ganancia real.</p>}
+                    {!p.fijos_exceden_ventas && p.reparto === "unidad" && p.fijo_unidad != null && p.fijos_mes ? (
+                      <p className="ayuda">Parte de costos fijos: {colones(p.fijo_unidad)} por cada producto vendido = costos fijos de {colones(p.fijos_mes)} al mes
+                        ÷ {num(p.unidades_reparto ?? 0, 0)} productos que vende al mes.</p>
+                    ) : null}
+                    {!p.fijos_exceden_ventas && p.reparto === "precio" && p.fijo_pct != null && p.fijos_mes ? (
+                      <p className="ayuda">La parte de costos fijos es el {pct(p.fijo_pct)} del precio: costos fijos de {colones(p.fijos_mes)} al mes
+                        ÷ ventas estimadas de {colones(p.ventas_mes)} al mes.</p>
+                    ) : null}
                     {p.costo_fijo == null && <p className="ayuda">Para repartir los costos fijos, ponga cuánto vende al mes en <Link to="/admin/costos">Costos del negocio</Link>.</p>}
-                    {p.precio_equilibrio != null && <p className="ayuda">Precio mínimo para no perder: <strong>{colones(p.precio_equilibrio)}</strong>.</p>}
+                    {!p.fijos_exceden_ventas && p.precio_equilibrio != null && <p className="ayuda">Precio mínimo para no perder: <strong>{colones(p.precio_equilibrio)}</strong>.</p>}
                   </div>
                 )}
                 <Campo label="Precio de la competencia">

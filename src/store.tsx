@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { api, getToken, setToken, setUnauthorizedHandler } from "./api";
+import { api, ApiError, getToken, setToken, setUnauthorizedHandler } from "./api";
 import type { Config, UnidadInfo, Usuario } from "./types";
 
 type Ctx = {
@@ -38,7 +38,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         try {
           setUsuario(await api<Usuario>("/api/auth/yo"));
           await cargarBase();
-        } catch { setToken(null); }
+        } catch (e) {
+          // solo cerrar la sesión si el servidor la rechazó; sin internet se conserva
+          if (e instanceof ApiError && e.status === 401) setToken(null);
+        }
       }
       setCargando(false);
     })();

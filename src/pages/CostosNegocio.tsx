@@ -19,8 +19,11 @@ type Resumen = {
   fuente_ventas: "productos" | "general"; fijo_pct: number | null; contribucion_pct: number | null;
   ingredientes_mes: number | null; variables_mes: number | null; ganancia_mes: number | null;
   equilibrio_mes: number | null; equilibrio_dia: number | null; dias_trabajo_mes: number; ventas_estimadas_mes: number;
-  iva_incluido: boolean; productos: FilaProd[];
+  iva_incluido: boolean; productos: FilaProd[]; productos_con_precio: number; productos_con_unidades: number;
+  reparto: "unidad" | "precio"; fijo_unidad: number | null; unidades_reparto: number; fuente_unidades: "productos" | "general";
+  unidades_estimadas_mes: number; equilibrio_unidades: number | null;
 };
+type Ajustes = { ventas_estimadas_mes: number; dias_trabajo_mes: number; reparto_fijos: "unidad" | "precio"; unidades_estimadas_mes: number };
 
 const FRECUENCIAS: [string, string][] = [["diaria", "Por día trabajado"], ["semanal", "Semanal"], ["quincenal", "Quincenal"],
   ["mensual", "Mensual"], ["trimestral", "Trimestral"], ["semestral", "Semestral"], ["anual", "Anual"]];
@@ -61,9 +64,14 @@ export default function CostosNegocio() {
     try { setRes(await api<Resumen>(`/api/costos/ventas/${id}`, { method: "PUT", body: { ventas_mes: v } })); }
     catch (e: any) { aviso(e.message, "error"); }
   };
-  const guardarAjustes = async (ventas: number | null, dias: number | null) => {
+  const usarReales = async () => {
+    if (!confirm("Se pondrán en cada producto las unidades vendidas en la caja en los últimos 30 días. ¿Continuar?")) return;
+    try { setRes(await api<Resumen>("/api/costos/usar-ventas-reales", { method: "POST" })); aviso("Unidades al mes tomadas de las ventas reales"); }
+    catch (e: any) { aviso(e.message, "error"); }
+  };
+  const guardarAjustes = async (a: Ajustes) => {
     try {
-      setRes(await api<Resumen>("/api/costos/ajustes/generales", { method: "PUT", body: { ventas_estimadas_mes: ventas || 0, dias_trabajo_mes: dias || 26 } }));
+      setRes(await api<Resumen>("/api/costos/ajustes/generales", { method: "PUT", body: a }));
       setCostos(await api<Costo[]>("/api/costos"));
     } catch (e: any) { aviso(e.message, "error"); }
   };
@@ -73,6 +81,9 @@ export default function CostosNegocio() {
   const fijos = costos.filter((c) => c.tipo === "fijo");
   const variables = costos.filter((c) => c.tipo === "variable");
   const sinVentas = !res.ventas_mes;
+  const porUnidad = res.reparto === "unidad";
+  const caros = porUnidad && res.fijo_unidad != null ? res.productos.filter((x) => x.precio_venta && res.fijo_unidad! >= x.precio_venta) : [];
+  const excede = porUnidad ? caros.length > 0 : res.ventas_mes > 0 && res.fijos_mes >= res.ventas_mes;
 
   return (
     <>
@@ -89,7 +100,9 @@ export default function CostosNegocio() {
         <div className="tarjeta-dato">
           <span className="cifra-label">Costos fijos al mes</span>
           <span className="cifra-valor">{colones(res.fijos_mes)}</span>
-          <span className="cifra-nota">{res.fijos_mes ? `${colones(res.fijos_mes / res.dias_trabajo_mes)} por día trabajado` : "Llene los montos abajo"}</span>
+          <span className="cifra-nota">{!res.fijos_mes ? "Llene los montos abajo"
+            : porUnidad && res.fijo_unidad != null ? `${colones(res.fijo_unidad)} por cada producto vendido (÷ ${num(res.unidades_reparto, 0)} al mes)`
+            : `${colones(res.fijos_mes / res.dias_trabajo_mes)} por día trabajado`}</span>
         </div>
         <div className="tarjeta-dato">
           <span className="cifra-label">Ventas estimadas al mes</span>
@@ -106,9 +119,25 @@ export default function CostosNegocio() {
           <span className="cifra-label">Punto de equilibrio</span>
           <span className="cifra-valor">{res.equilibrio_mes == null ? "—" : colones(res.equilibrio_mes)}</span>
           <span className="cifra-nota">{res.equilibrio_mes == null ? "Ventas mínimas al mes para no perder"
-            : `Ventas mínimas al mes para no perder · ${colones(res.equilibrio_dia)} por día`}</span>
+            : `Ventas mínimas al mes para no perder · ${colones(res.equilibrio_dia)} por día`
+              + (res.equilibrio_unidades != null ? ` · unos ${num(Math.ceil(res.equilibrio_unidades), 0)} productos al mes` : "")}</span>
         </div>
       </section>
+      {excede && (
+        <div className="aviso-costos grande">
+          {porUnidad
+            ? <strong>Con {num(res.unidades_reparto, 0)} productos al mes, a cada uno le tocan {colones(res.fijo_unidad)} de costos fijos: más de lo que {caros.length === 1 ? "vale uno de sus productos" : `valen ${caros.length} de sus productos`}.</strong>
+            : <strong>Los costos fijos ({colones(res.fijos_mes)}) son más que las ventas estimadas ({colones(res.ventas_mes)}).</strong>}
+          <p>Con tan pocas ventas anotadas, cada producto tendría que cargar con más de lo que vale, por eso la ganancia real sale muy negativa.
+            {res.fuente_ventas === "productos" && res.productos_con_unidades < res.productos_con_precio
+              ? ` Solo ${res.productos_con_unidades} de ${res.productos_con_precio} productos con precio tienen unidades al mes: complete los demás abajo, o ponga un monto general de ventas al mes.`
+              : " Revise que las unidades al mes y los montos de los costos fijos estén bien."}</p>
+        </div>
+      )}
+      {!excede && res.ventas_mes > 0 && res.fuente_ventas === "productos" && res.productos_con_unidades < res.productos_con_precio && (
+        <p className="aviso-suave">Solo {res.productos_con_unidades} de {res.productos_con_precio} productos con precio tienen unidades al mes.
+          Mientras más complete, más justo es el reparto de los costos fijos.</p>
+      )}
       {res.ventas_mes > 0 && res.equilibrio_mes != null && (
         <div className="barra-equilibrio" aria-label="Ventas comparadas con el punto de equilibrio">
           <div className="barra-equilibrio-pista">
@@ -169,6 +198,7 @@ export default function CostosNegocio() {
         <p className="ayuda">Los costos fijos se reparten entre lo que vende. Lo más exacto es poner cuántas unidades espera vender de cada producto.
           Si no lo sabe todavía, ponga un monto general de ventas al mes.</p>
         <AjustesVentas res={res} onGuardar={guardarAjustes} />
+        <button className="btn" style={{ marginTop: 12 }} onClick={usarReales}>Usar las ventas reales de la caja (últimos 30 días)</button>
         <div className="tabla-envoltura" style={{ marginTop: 14 }}>
           <table className="tabla compacta costos-prod">
             <thead><tr>
@@ -274,23 +304,43 @@ function UnidadesMes({ valor, etiqueta, onGuardar }: { valor: number | null; eti
                 onChange={(e) => setTxt(e.target.value)} onBlur={listo} onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }} />;
 }
 
-function AjustesVentas({ res, onGuardar }: { res: Resumen; onGuardar: (ventas: number | null, dias: number | null) => void }) {
-  const [ventas, setVentas] = useState<number | null>(res.ventas_estimadas_mes || null);
-  const [dias, setDias] = useState<number | null>(res.dias_trabajo_mes);
-  const cambiado = (ventas || 0) !== (res.ventas_estimadas_mes || 0) || (dias || 26) !== res.dias_trabajo_mes;
+function AjustesVentas({ res, onGuardar }: { res: Resumen; onGuardar: (a: Ajustes) => void }) {
+  const inicial: Ajustes = { ventas_estimadas_mes: res.ventas_estimadas_mes || 0, dias_trabajo_mes: res.dias_trabajo_mes,
+    reparto_fijos: res.reparto, unidades_estimadas_mes: res.unidades_estimadas_mes || 0 };
+  const [a, setA] = useState<Ajustes>(inicial);
+  const cambiado = JSON.stringify(a) !== JSON.stringify(inicial);
+  const porUnidad = a.reparto_fijos === "unidad";
   return (
     <div className="ajustes-ventas">
       <label className="campo">
-        <span className="campo-label">Ventas generales al mes{res.iva_incluido ? " (sin IVA)" : ""}</span>
-        <div className="con-prefijo"><span>₡</span><NumInput value={ventas} allowEmpty min={0} ariaLabel="Ventas generales al mes" onChange={setVentas} /></div>
-        <span className="campo-ayuda">{res.fuente_ventas === "productos" ? "No se usa: ya hay unidades por producto en la tabla." : "Se usa mientras no ponga unidades por producto."}</span>
+        <span className="campo-label">Cómo repartir los costos fijos</span>
+        <select value={a.reparto_fijos} onChange={(e) => setA({ ...a, reparto_fijos: e.target.value as Ajustes["reparto_fijos"] })}>
+          <option value="unidad">Igual por cada producto vendido</option>
+          <option value="precio">Según el precio de cada producto</option>
+        </select>
+        <span className="campo-ayuda">{porUnidad ? "Costos fijos del mes ÷ productos que vende al mes." : "Los productos más caros cargan más; los baratos, menos."}</span>
       </label>
+      {porUnidad ? (
+        <label className="campo">
+          <span className="campo-label">Productos que vende al mes (general)</span>
+          <NumInput value={a.unidades_estimadas_mes || null} allowEmpty min={0} ariaLabel="Productos que vende al mes"
+                    onChange={(v) => setA({ ...a, unidades_estimadas_mes: v || 0 })} />
+          <span className="campo-ayuda">{res.fuente_unidades === "productos" ? "No se usa: ya hay unidades por producto en la tabla." : "Se usa mientras no ponga unidades por producto."}</span>
+        </label>
+      ) : (
+        <label className="campo">
+          <span className="campo-label">Ventas generales al mes{res.iva_incluido ? " (sin IVA)" : ""}</span>
+          <div className="con-prefijo"><span>₡</span><NumInput value={a.ventas_estimadas_mes || null} allowEmpty min={0} ariaLabel="Ventas generales al mes"
+                    onChange={(v) => setA({ ...a, ventas_estimadas_mes: v || 0 })} /></div>
+          <span className="campo-ayuda">{res.fuente_ventas === "productos" ? "No se usa: ya hay unidades por producto en la tabla." : "Se usa mientras no ponga unidades por producto."}</span>
+        </label>
+      )}
       <label className="campo">
         <span className="campo-label">Días que trabaja al mes</span>
-        <NumInput value={dias} min={1} ariaLabel="Días que trabaja al mes" onChange={setDias} />
+        <NumInput value={a.dias_trabajo_mes} min={1} ariaLabel="Días que trabaja al mes" onChange={(v) => setA({ ...a, dias_trabajo_mes: v || 26 })} />
         <span className="campo-ayuda">Para pasar costos diarios a mensuales y las ventas por día.</span>
       </label>
-      {cambiado && <button className="btn btn-primario" onClick={() => onGuardar(ventas, dias)}>Guardar</button>}
+      {cambiado && <button className="btn btn-primario" onClick={() => onGuardar(a)}>Guardar</button>}
     </div>
   );
 }

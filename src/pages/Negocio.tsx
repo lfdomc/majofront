@@ -122,6 +122,8 @@ export default function Negocio() {
           <h2 className="seccion">Contacto</h2>
           <div className="rejilla-campos">
             {texto("whatsapp", "WhatsApp", "Para el botón «Pedir por WhatsApp»", "8888-8888")}
+            {texto("sinpe", "SINPE Móvil", "Se muestra en la caja al cobrar por SINPE", "8888-8888")}
+            {texto("sinpe_nombre", "SINPE a nombre de", undefined, "Nombre de la cuenta")}
             {texto("telefono", "Teléfono", undefined, "2222-2222")}
             {texto("email", "Correo")}
             {texto("horario", "Horario", undefined, "Lunes a sábado, 10 a. m. a 8 p. m.")}

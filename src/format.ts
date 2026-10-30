@@ -4,7 +4,8 @@ const dec = (n: number) => new Intl.NumberFormat("es-CR", { minimumFractionDigit
 /** Colones sin decimales: ₡1 250 */
 export function colones(v: number | null | undefined) {
   if (v === null || v === undefined || Number.isNaN(v)) return "—";
-  return "₡" + entero.format(Math.round(v));
+  const r = Math.round(v);
+  return (r < 0 ? "-" : "") + "₡" + entero.format(Math.abs(r));
 }
 
 /** Colones para costos unitarios pequeños: ₡0,656 */

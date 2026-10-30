@@ -15,6 +15,8 @@ import Negocio from "./pages/Negocio";
 import Categorias from "./pages/Categorias";
 import Compras from "./pages/Compras";
 import CostosNegocio from "./pages/CostosNegocio";
+import Pos from "./pos/Pos";
+import Ventas from "./pages/Ventas";
 
 function Shell() {
   const { usuario, cargando, salir, config } = useApp();
@@ -45,8 +47,10 @@ function Shell() {
         <div className="panel-nav" id="menu-admin">
         <nav aria-label="Secciones">
           <NavLink to="/admin" end>Inicio</NavLink>
+          <a className="nav-caja" href="/pos">Abrir la caja (POS) ↗</a>
           <NavLink to="/admin/recetas">Productos y recetas</NavLink>
           <NavLink to="/admin/ingredientes">Ingredientes</NavLink>
+          <NavLink to="/admin/ventas">Ventas</NavLink>
           <NavLink to="/admin/costos">Costos del negocio</NavLink>
           <NavLink to="/admin/compras">Lista de compras</NavLink>
           <NavLink to="/admin/categorias">Categorías</NavLink>
@@ -73,6 +77,7 @@ function Shell() {
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/compras" element={<Compras />} />
           <Route path="/costos" element={<CostosNegocio />} />
+          <Route path="/ventas" element={<Ventas />} />
           <Route path="/ajustes" element={<Ajustes />} />
           <Route path="/negocio" element={<Negocio />} />
           <Route path="*" element={<Navigate to="/admin" />} />
@@ -90,6 +95,8 @@ export default function App() {
         <Route path="/" element={<MenuPublico />} />
         <Route path="/menu" element={<MenuPublico />} />
         <Route path="/en" element={<MenuPublico key="en" idioma="en" />} />
+        {/* Caja (POS): instalable en el teléfono y funciona sin internet */}
+        <Route path="/pos/*" element={<Pos />} />
         {/* Panel interno de costeo */}
         <Route path="/admin/*" element={<AppProvider><Shell /></AppProvider>} />
         <Route path="*" element={<Navigate to="/" replace />} />

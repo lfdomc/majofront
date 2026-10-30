@@ -1,5 +1,6 @@
 {
   "version": 1,
   "include": ["/*"],
-  "exclude": ["/assets/*", "/favicon.svg", "/compartir.jpg"]
+  "exclude": ["/assets/*", "/favicon.svg", "/compartir.jpg", "/sw.js", "/manifest-pos.webmanifest",
+              "/pos-icono-192.png", "/pos-icono-512.png", "/pos-icono-maskable.png"]
 }

@@ -102,6 +102,8 @@ export type Calculo = {
     variable_pct?: number; variable_unidad?: number; fijo_pct?: number | null; precio_equilibrio?: number | null;
     costo_variable?: number; costo_fijo?: number | null; contribucion?: number; costo_real?: number;
     ganancia_real?: number | null; margen_neto_pct?: number | null;
+    fijos_mes?: number; ventas_mes?: number; fijos_exceden_ventas?: boolean;
+    reparto?: "unidad" | "precio"; fijo_unidad?: number | null; unidades_reparto?: number;
   };
 };
 
@@ -113,7 +115,7 @@ export type Negocio = {
   nombre: string; eslogan: string; lugar: string; descripcion: string; telefono: string; whatsapp: string; email: string;
   direccion: string; mapa: string; horario: string; instagram: string; facebook: string; tiktok: string;
   sitio_web: string; color: string; mostrar_precios: boolean; logo: string | null; distintivo?: "logo" | "gorro" | "ninguno";
-  eslogan_en?: string; descripcion_en?: string; horario_en?: string;
+  eslogan_en?: string; descripcion_en?: string; horario_en?: string; sinpe?: string; sinpe_nombre?: string;
 };
 
 export type MenuPublico = {
