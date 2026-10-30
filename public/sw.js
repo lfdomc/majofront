@@ -1,8 +1,8 @@
 /* Service worker de la caja (POS): guarda la aplicación para que abra y cobre sin internet.
    - Páginas: primero la red; si no hay, la copia guardada.
-   - Archivos de la app (/assets/…, íconos, letras): copia guardada; si no está, la red.
+   - Archivos de la app (/assets/…, íconos, letras) y fotos de productos: copia guardada; si no está, la red.
    - Las llamadas al servidor (API) no se tocan: las ventas sin internet las guarda la propia app. */
-const CACHE = "caja-v1";
+const CACHE = "caja-v2";
 const BASE = ["/pos", "/manifest-pos.webmanifest", "/pos-icono-192.png", "/pos-icono-512.png", "/favicon.svg"];
 
 self.addEventListener("install", (e) => {
@@ -45,7 +45,8 @@ self.addEventListener("fetch", (e) => {
     })());
     return;
   }
-  if ((mismoSitio && (url.pathname.startsWith("/assets/") || /\.(png|svg|webmanifest|woff2?)$/.test(url.pathname))) || letras) {
+  const fotoProducto = req.destination === "image" && /\/media\/(mini\/)?[0-9a-f]{32}\.(webp|png|jpg)$/.test(url.pathname);
+  if (fotoProducto || (mismoSitio && (url.pathname.startsWith("/assets/") || /\.(png|svg|webmanifest|woff2?)$/.test(url.pathname))) || letras) {
     e.respondWith((async () => {
       const guardada = await caches.match(req);
       if (guardada) return guardada;

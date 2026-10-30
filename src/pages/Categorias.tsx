@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { Cargando, ErrorCaja } from "../components";
 import { useApp } from "../store";
 
 type Tipo = "producto" | "subreceta" | "ingrediente";
-type Cat = { nombre: string; usos: number; en?: string; en_sugerido?: string };
+type Cat = { nombre: string; usos: number; en?: string; en_sugerido?: string; color?: string };
 
 const PESTANAS: { tipo: Tipo; titulo: string; cosa: [string, string] }[] = [
   { tipo: "producto", titulo: "Productos", cosa: ["producto", "productos"] },
@@ -61,6 +61,10 @@ export default function Categorias() {
       .catch((e) => aviso(e.message, "error"));
   };
 
+  const esperaColor = useRef<number>();
+  const guardarColor = (nombre: string, color: string) =>
+    hacer(() => api(`/api/categorias/${tipo}/color`, { method: "PUT", body: { nombre, color } }), `Color de «${nombre}» guardado`);
+
   const guardarIngles = (nombre: string, en: string) =>
     hacer(() => api(`/api/categorias/${tipo}/ingles`, { method: "PUT", body: { nombre, en } }),
       en ? `«${nombre}» en inglés: ${en}` : `Se usará la traducción sugerida para «${nombre}»`);
@@ -100,7 +104,7 @@ export default function Categorias() {
         <div className="tabla-envoltura">
           <table className="tabla cat-tabla">
             <thead>
-              <tr><th style={{ width: 84 }}>Orden</th><th>Nombre</th>{tipo === "producto" && <th>En inglés</th>}<th className="n">En uso</th><th className="n">Acciones</th></tr>
+              <tr><th style={{ width: 84 }}>Orden</th><th>Nombre</th>{tipo === "producto" && <th>Color en la caja</th>}{tipo === "producto" && <th>En inglés</th>}<th className="n">En uso</th><th className="n">Acciones</th></tr>
             </thead>
             <tbody>
               {lista.map((c, i) => (
@@ -124,6 +128,17 @@ export default function Categorias() {
                   </td>
                   {tipo === "producto" && (
                     <td>
+                      <input type="color" className="cat-color" defaultValue={c.color || "#D94C72"} key={c.nombre + (c.color || "")}
+                             aria-label={`Color de ${c.nombre}`}
+                             onChange={(e) => {
+                               const v = e.target.value;
+                               clearTimeout(esperaColor.current);
+                               esperaColor.current = window.setTimeout(() => { if (v.toUpperCase() !== (c.color || "").toUpperCase()) guardarColor(c.nombre, v); }, 700);
+                             }} />
+                    </td>
+                  )}
+                  {tipo === "producto" && (
+                    <td>
                       <input className="cat-en" defaultValue={c.en || ""} key={c.nombre + (c.en || "")} maxLength={80}
                              placeholder={c.en_sugerido || "Nombre en inglés"} aria-label={`${c.nombre} en inglés`}
                              onBlur={(e) => { const v = e.target.value.trim(); if (v !== (c.en || "")) guardarIngles(c.nombre, v); }}
@@ -142,7 +157,7 @@ export default function Categorias() {
                   </td>
                 </tr>
               ))}
-              {lista.length === 0 && <tr><td colSpan={tipo === "producto" ? 5 : 4} className="vacio">Todavía no hay categorías.</td></tr>}
+              {lista.length === 0 && <tr><td colSpan={tipo === "producto" ? 6 : 4} className="vacio">Todavía no hay categorías.</td></tr>}
             </tbody>
           </table>
         </div>

@@ -62,6 +62,8 @@ export default function Ajustes() {
 
         <WhatsappNegocio admin={!!usuario?.es_admin} />
 
+        <DatosTributarios admin={!!usuario?.es_admin} />
+
         <Publicacion />
 
         {usuario?.es_admin && <Usuarios />}
@@ -244,6 +246,80 @@ function Publicacion() {
           </div>
         </>
       )}
+    </section>
+  );
+}
+
+const LEYENDA_REGIMEN: Record<string, string> = {
+  simplificado: "Contribuyente del Régimen de Tributación Simplificada. Precios con impuestos incluidos; no se desglosa el IVA.",
+  tradicional: "Comprobante interno de venta.",
+  ninguno: "",
+};
+
+/** Datos del contribuyente que salen en el comprobante de la caja (no se publican en el menú). */
+function DatosTributarios({ admin }: { admin: boolean }) {
+  const { aviso, config } = useApp();
+  const [neg, setNeg] = useState<Negocio | null>(null);
+  const [d, setD] = useState<Partial<Negocio>>({});
+  const [guardado, setGuardado] = useState("");
+  const tomar = (n: Negocio) => {
+    const x = { regimen: n.regimen || "simplificado", contribuyente: n.contribuyente || "", cedula_tipo: n.cedula_tipo || "fisica",
+      cedula: n.cedula || "", actividad: n.actividad || "", direccion_fiscal: n.direccion_fiscal || "", leyenda_comprobante: n.leyenda_comprobante || "" } as Partial<Negocio>;
+    setNeg(n); setD(x); setGuardado(JSON.stringify(x));
+  };
+  useEffect(() => { api<Negocio>("/api/negocio").then(tomar).catch(() => {}); }, []);
+  if (!neg) return null;
+  const cambiado = JSON.stringify(d) !== guardado;
+  const guardar = async () => {
+    try {
+      const { logo: _l, ...cuerpo } = neg;
+      const n = await api<Negocio>("/api/negocio", { method: "PUT", body: { ...cuerpo, ...d, cedula: (d.cedula || "").replace(/[^\dA-Za-z]/g, "") } });
+      tomar(n); aviso("Datos del comprobante guardados");
+    } catch (e: any) { aviso(e.message, "error"); }
+  };
+  const s = (k: keyof Negocio) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setD({ ...d, [k]: e.target.value });
+  return (
+    <section className="bloque">
+      <h2 className="seccion">Datos para el comprobante (Hacienda)</h2>
+      <p className="ayuda">Salen en el comprobante que la caja envía por WhatsApp. No se muestran en el menú para clientes.
+        En el Régimen de Tributación Simplificada no está obligada a emitir factura electrónica y no se desglosa el IVA en las ventas.</p>
+      <div className="rejilla-campos">
+        <Campo label="Régimen">
+          <select value={d.regimen} onChange={s("regimen")} disabled={!admin}>
+            <option value="simplificado">Régimen de Tributación Simplificada</option>
+            <option value="tradicional">Régimen Tradicional</option>
+            <option value="ninguno">No mostrar régimen</option>
+          </select>
+        </Campo>
+        <Campo label="Nombre del contribuyente" ayuda="Como está inscrito en Hacienda">
+          <input value={d.contribuyente} onChange={s("contribuyente")} disabled={!admin} placeholder="Nombre completo o razón social" />
+        </Campo>
+        <Campo label="Tipo de identificación">
+          <select value={d.cedula_tipo} onChange={s("cedula_tipo")} disabled={!admin}>
+            <option value="fisica">Cédula física</option>
+            <option value="juridica">Cédula jurídica</option>
+            <option value="dimex">DIMEX</option>
+            <option value="nite">NITE</option>
+          </select>
+        </Campo>
+        <Campo label="Número de identificación" ayuda={d.cedula_tipo === "fisica" ? "9 dígitos, ej. 1-1234-0567" : d.cedula_tipo === "juridica" ? "10 dígitos, ej. 3-101-123456" : undefined}>
+          <input value={d.cedula} onChange={s("cedula")} disabled={!admin} inputMode="numeric" />
+        </Campo>
+        <Campo label="Actividad económica" ayuda="Código y nombre, como aparece en Hacienda">
+          <input value={d.actividad} onChange={s("actividad")} disabled={!admin} placeholder="Ej.: 5610.1 Restaurantes, sodas, cafeterías" />
+        </Campo>
+        <Campo label="Dirección para el comprobante" ayuda="Si la deja vacía, se usa la de Menú y negocio">
+          <input value={d.direccion_fiscal} onChange={s("direccion_fiscal")} disabled={!admin} />
+        </Campo>
+      </div>
+      <Campo label="Leyenda del comprobante" ayuda={`Si la deja vacía: «${LEYENDA_REGIMEN[d.regimen || "simplificado"] || "sin leyenda"}»`}>
+        <textarea rows={2} value={d.leyenda_comprobante} onChange={s("leyenda_comprobante")} disabled={!admin} maxLength={400} />
+      </Campo>
+      {d.regimen === "simplificado" && config?.aplicar_iva && (
+        <p className="error-texto">En Precios está marcado que los precios incluyen IVA y el sistema lo resta para calcular la ganancia.
+          En el régimen simplificado no se cobra IVA aparte en las ventas: revise esa opción arriba.</p>
+      )}
+      {admin && <div className="fila-botones izquierda"><button className="btn btn-primario" onClick={guardar} disabled={!cambiado}>Guardar datos</button></div>}
     </section>
   );
 }

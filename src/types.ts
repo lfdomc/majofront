@@ -116,6 +116,8 @@ export type Negocio = {
   direccion: string; mapa: string; horario: string; instagram: string; facebook: string; tiktok: string;
   sitio_web: string; color: string; mostrar_precios: boolean; logo: string | null; distintivo?: "logo" | "gorro" | "ninguno";
   eslogan_en?: string; descripcion_en?: string; horario_en?: string; sinpe?: string; sinpe_nombre?: string;
+  regimen?: "simplificado" | "tradicional" | "ninguno"; contribuyente?: string; cedula_tipo?: "fisica" | "juridica" | "dimex" | "nite";
+  cedula?: string; actividad?: string; direccion_fiscal?: string; leyenda_comprobante?: string;
 };
 
 export type MenuPublico = {

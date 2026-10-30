@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { api, ApiError, getToken, setToken } from "../api";
+import { api, ApiError, getToken, mediaUrl, setToken } from "../api";
 import { colones, num } from "../format";
 import {
   actualizarCatalogo, catalogoGuardado, cola, nuevoUid, quitarDeCola, registrarVenta, sincronizar,
@@ -77,7 +77,7 @@ function Caja({ onSalir }: { onSalir: () => void }) {
   const [buscar, setBuscar] = useState("");
   const [cobrando, setCobrando] = useState(false);
   const [carritoAbierto, setCarritoAbierto] = useState(false);
-  const [listo, setListo] = useState<{ total: number; vuelto: number | null; forma: string } | null>(null);
+  const [listo, setListo] = useState<{ total: number; vuelto: number | null; forma: string; venta: VentaLocal } | null>(null);
   const [pendientes, setPendientes] = useState(cola().length);
   const [enLinea, setEnLinea] = useState(navigator.onLine);
   const [menu, setMenu] = useState(false);
@@ -130,7 +130,7 @@ function Caja({ onSalir }: { onSalir: () => void }) {
   const confirmar = async (forma: "efectivo" | "sinpe", recibido: number | null) => {
     const v: VentaLocal = { uid: nuevoUid(), fecha: new Date().toISOString(), forma_pago: forma, items: lineas, recibido, total };
     setCobrando(false); setCarritoAbierto(false);
-    setListo({ total, vuelto: forma === "efectivo" && recibido != null ? Math.max(0, recibido - total) : null, forma });
+    setListo({ total, vuelto: forma === "efectivo" && recibido != null ? Math.max(0, recibido - total) : null, forma, venta: v });
     setLineas([]);
     setPendientes(cola().length + 1);
     await registrarVenta(v).then((r) => { setPendientes(r.pendientes); if (r.sinConexion) setEnLinea(false); else setEnLinea(true); if (r.sesionVencida) onSalir(); });
@@ -197,28 +197,34 @@ function Caja({ onSalir }: { onSalir: () => void }) {
                 <button role="tab" aria-selected={!categoria} className={!categoria ? "activa" : ""} onClick={() => setCategoria("")}>Todo</button>
                 {cat.categorias.map((c) => (
                   <button key={c.nombre} role="tab" aria-selected={categoria === c.nombre} className={categoria === c.nombre ? "activa" : ""}
-                          onClick={() => setCategoria(c.nombre)}>{c.nombre}</button>
+                          style={{ "--cat": c.color || "var(--marca)" } as CSSProperties} onClick={() => setCategoria(c.nombre)}>
+                    <i aria-hidden="true" />{c.nombre}
+                  </button>
                 ))}
               </div>
             </div>
             {visibles.length === 0 && <p className="pos-vacio">{buscar ? "No hay productos con ese nombre." : "No hay productos con precio. Póngales precio de venta en la administración."}</p>}
-            {visibles.map((c) => (
-              <div key={c.nombre} className="pos-grupo">
-                {!categoria && <h2>{c.nombre}</h2>}
-                <div className="pos-productos">
-                  {c.productos.map((p) => {
-                    const q = enCarrito(p.id);
-                    return (
-                      <button key={p.id} className={"pos-producto" + (q ? " elegido" : "")} onClick={() => agregar(p)}>
-                        <span className="pos-producto-nombre">{p.nombre}</span>
-                        <span className="pos-producto-precio">{colones(p.precio)}</span>
-                        {q > 0 && <span className="pos-cantidad" aria-label={`${q} en la venta`}>{num(q, 0)}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+            {/* Todos los productos seguidos (sin huecos); el color dice de qué categoría es */}
+            <div className="pos-productos">
+              {visibles.flatMap((c) => c.productos.map((p) => {
+                const q = enCarrito(p.id);
+                return (
+                  <button key={p.id} className={"pos-producto" + (q ? " elegido" : "")} onClick={() => agregar(p)}
+                          style={{ "--cat": c.color || "var(--marca)" } as CSSProperties} title={`${p.nombre} · ${c.nombre}`}>
+                    <span className="pos-producto-foto" aria-hidden="true">
+                      {p.foto ? <img src={mediaUrl(p.foto)!} alt="" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        : null}
+                      <span className="pos-inicial">{p.nombre.split(/\s+/).filter((w) => w.length > 2).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || p.nombre[0]}</span>
+                    </span>
+                    <span className="pos-producto-texto">
+                      <span className="pos-producto-nombre">{p.nombre}</span>
+                      <span className="pos-producto-precio">{colones(p.precio)}</span>
+                    </span>
+                    {q > 0 && <span className="pos-cantidad" aria-label={`${q} en la venta`}>{num(q, 0)}</span>}
+                  </button>
+                );
+              }))}
+            </div>
           </section>
 
           <aside className={"pos-carrito" + (carritoAbierto ? " abierto" : "")} aria-label="Venta actual">
@@ -250,11 +256,11 @@ function Caja({ onSalir }: { onSalir: () => void }) {
         </div>
       )}
 
-      {vista === "ventas" && <VentasHoy enLinea={enLinea} pendientes={pendientes} onCambio={subir} />}
+      {vista === "ventas" && <VentasHoy enLinea={enLinea} pendientes={pendientes} onCambio={subir} negocio={cat.negocio} />}
       {vista === "caja" && <CierreCaja enLinea={enLinea} />}
 
       {cobrando && <Cobro total={total} cat={cat} onCancelar={() => setCobrando(false)} onConfirmar={confirmar} />}
-      {listo && <Listo {...listo} enLinea={enLinea} onSeguir={() => setListo(null)} />}
+      {listo && <Listo {...listo} negocio={cat.negocio} enLinea={enLinea} onSeguir={() => setListo(null)} />}
       {aviso && <div className="pos-aviso" role="status">{aviso}</div>}
     </div>
   );
@@ -321,27 +327,99 @@ function Cobro({ total, cat, onCancelar, onConfirmar }: {
   );
 }
 
-function Listo({ total, vuelto, forma, enLinea, onSeguir }: { total: number; vuelto: number | null; forma: string; enLinea: boolean; onSeguir: () => void }) {
-  useEffect(() => {
-    const t = setTimeout(onSeguir, vuelto ? 8000 : 2500);
-    return () => clearTimeout(t);
-  }, [onSeguir, vuelto]);
+/** Texto del comprobante para WhatsApp (no es factura electrónica). */
+type DatosNegocio = Catalogo["negocio"];
+
+/** Cédula con guiones: física 1-1234-0567 · jurídica 3-101-123456. */
+export function cedulaLegible(tipo: string | undefined, c: string | undefined) {
+  const d = (c || "").replace(/\D/g, "");
+  if (tipo === "fisica" && d.length === 9) return `${d[0]}-${d.slice(1, 5)}-${d.slice(5)}`;
+  if (tipo === "juridica" && d.length === 10) return `${d[0]}-${d.slice(1, 4)}-${d.slice(4)}`;
+  return c || "";
+}
+
+export const LEYENDAS: Record<string, string> = {
+  simplificado: "Contribuyente del Régimen de Tributación Simplificada. Precios con impuestos incluidos; no se desglosa el IVA.",
+  tradicional: "Comprobante interno de venta.",
+  ninguno: "",
+};
+
+export function textoComprobante(n: DatosNegocio | string, v: { uid: string; fecha: string; forma_pago: string; recibido: number | null; total: number;
+  items: { nombre: string; cantidad: number; precio_unitario: number }[]; id?: number }) {
+  const f = new Date(v.fecha);
+  const fecha = f.toLocaleDateString("es-CR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const hora = f.toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
+  const numero = v.uid.replace(/-/g, "").slice(0, 6).toUpperCase();  // el mismo antes y después de subirla
+  const lineas = v.items.map((i) => `${num(i.cantidad, 0)} × ${i.nombre} — ${colones(i.cantidad * i.precio_unitario)}`);
+  const pago = v.forma_pago === "sinpe" ? "SINPE Móvil"
+    : `Efectivo${v.recibido != null && v.recibido > v.total ? ` · Recibido ${colones(v.recibido)} · Vuelto ${colones(v.recibido - v.total)}` : ""}`;
+  const d: Partial<DatosNegocio> = typeof n === "string" ? { nombre: n } : n;
+  const tipoCed = { fisica: "Céd.", juridica: "Céd. jurídica", dimex: "DIMEX", nite: "NITE" }[d.cedula_tipo || "fisica"] || "Céd.";
+  const cabecera = [
+    `*${d.nombre || "Comprobante"}*`,
+    d.contribuyente || d.cedula ? [d.contribuyente, d.cedula ? `${tipoCed} ${cedulaLegible(d.cedula_tipo, d.cedula)}` : ""].filter(Boolean).join(" · ") : "",
+    d.regimen === "simplificado" ? "Régimen de Tributación Simplificada" : d.regimen === "tradicional" ? "Régimen Tradicional" : "",
+    d.actividad ? `Actividad: ${d.actividad}` : "",
+    [d.direccion, d.telefono ? `Tel. ${d.telefono}` : ""].filter(Boolean).join(" · "),
+  ].filter(Boolean);
+  const leyenda = (d.leyenda || "").trim() || LEYENDAS[d.regimen || "ninguno"] || "";
+  return [...cabecera, "", "Comprobante de compra", `${fecha} ${hora} · N.º ${numero}`, "",
+    ...lineas, "", `*Total: ${colones(v.total)}*`, `Pago: ${pago}`, "", "¡Gracias por su compra!",
+    ...(leyenda ? [`_${leyenda}_`] : []), "_Este comprobante no es una factura electrónica._"].join("\n");
+}
+
+function enlaceComprobante(telefono: string, texto: string) {
+  let d = telefono.replace(/\D/g, "");
+  if (d.length === 8) d = "506" + d;
+  return `https://wa.me/${d}?text=${encodeURIComponent(texto)}`;
+}
+
+/** Pide el número del cliente y abre WhatsApp con el comprobante listo para enviar. */
+function EnviarComprobante({ texto, onUsar }: { texto: string; onUsar?: () => void }) {
+  const [tel, setTel] = useState("");
+  const valido = tel.replace(/\D/g, "").length >= 8;
   return (
-    <div className="pos-modal-fondo" onClick={onSeguir}>
+    <div className="pos-comprobante">
+      <label>Enviar comprobante por WhatsApp
+        <div className="pos-comprobante-fila">
+          <input inputMode="tel" placeholder="Número del cliente" value={tel} onFocus={onUsar}
+                 onChange={(e) => { setTel(e.target.value.replace(/[^\d+\s-]/g, "")); onUsar?.(); }} aria-label="WhatsApp del cliente" />
+          <a className={"pos-btn whatsapp" + (valido ? "" : " inactivo")} aria-disabled={!valido}
+             href={valido ? enlaceComprobante(tel, texto) : undefined} target="_blank" rel="noopener"
+             onClick={(e) => { if (!valido) e.preventDefault(); onUsar?.(); }}>Enviar</a>
+        </div>
+      </label>
+    </div>
+  );
+}
+
+function Listo({ total, vuelto, forma, venta, negocio, enLinea, onSeguir }: {
+  total: number; vuelto: number | null; forma: string; venta: VentaLocal; negocio: DatosNegocio; enLinea: boolean; onSeguir: () => void;
+}) {
+  const [quieto, setQuieto] = useState(false);  // si está escribiendo el número, no se cierra solo
+  useEffect(() => {
+    if (quieto) return;
+    const t = setTimeout(onSeguir, vuelto ? 9000 : 4000);
+    return () => clearTimeout(t);
+  }, [onSeguir, vuelto, quieto]);
+  return (
+    <div className="pos-modal-fondo">
       <div className="pos-modal pos-listo" role="alertdialog" aria-label="Venta registrada">
         <div className="pos-check" aria-hidden="true">✓</div>
         <p className="pos-total-etiqueta">Venta registrada · {forma === "sinpe" ? "SINPE Móvil" : "Efectivo"}</p>
         <p className="pos-total">{colones(total)}</p>
         {vuelto != null && vuelto > 0 && <p className="pos-vuelto grande">Vuelto: <strong>{colones(vuelto)}</strong></p>}
         {!enLinea && <p className="pos-nota">Sin internet: quedó guardada en el teléfono y se sube sola.</p>}
-        <button className="pos-btn grande" onClick={onSeguir} autoFocus>Nueva venta</button>
+        <EnviarComprobante texto={textoComprobante(negocio, venta)} onUsar={() => setQuieto(true)} />
+        <button className="pos-btn grande" onClick={onSeguir}>Nueva venta</button>
       </div>
     </div>
   );
 }
 
-function VentasHoy({ enLinea, pendientes, onCambio }: { enLinea: boolean; pendientes: number; onCambio: () => void }) {
+function VentasHoy({ enLinea, pendientes, onCambio, negocio }: { enLinea: boolean; pendientes: number; onCambio: () => void; negocio: DatosNegocio }) {
   const [ventas, setVentas] = useState<VentaServidor[] | null>(null);
+  const [comprobante, setComprobante] = useState<string | null>(null);
   const [err, setErr] = useState("");
   const locales = cola();
   const cargar = useCallback(() => {
@@ -375,6 +453,7 @@ function VentasHoy({ enLinea, pendientes, onCambio }: { enLinea: boolean; pendie
               <span>{v.items.map((i) => `${num(i.cantidad, 0)} × ${i.nombre}`).join(", ")}</span>
               <small className={v.error ? "pos-error" : ""}>{v.error ? `No se pudo subir: ${v.error}` : "Por subir"}</small></div>
             <div className="pos-lista-der"><b>{colones(v.total)}</b><small>{v.forma_pago === "sinpe" ? "SINPE" : "Efectivo"}</small>
+              <button className="pos-link" onClick={() => setComprobante(textoComprobante(negocio, v))}>Comprobante</button>
               {v.error && <button className="pos-link" onClick={() => { if (confirm("¿Descartar esta venta que no se pudo subir?")) { quitarDeCola(v.uid); onCambio(); } }}>Descartar</button>}</div>
           </li>
         ))}
@@ -384,11 +463,21 @@ function VentasHoy({ enLinea, pendientes, onCambio }: { enLinea: boolean; pendie
               <span>{v.items.map((i) => `${num(i.cantidad, 0)} × ${i.nombre}`).join(", ")}</span>
               {v.anulada && <small>Anulada</small>}</div>
             <div className="pos-lista-der"><b>{colones(v.total)}</b><small>{v.forma_pago === "sinpe" ? "SINPE" : "Efectivo"}</small>
+              {!v.anulada && <button className="pos-link" onClick={() => setComprobante(textoComprobante(negocio, { ...v, fecha: v.fecha + "-06:00" }))}>Comprobante</button>}
               {enLinea && <button className="pos-link" onClick={() => anular(v)}>{v.anulada ? "Restaurar" : "Anular"}</button>}</div>
           </li>
         ))}
         {ventas && ventas.length === 0 && locales.length === 0 && <li className="pos-vacio">Todavía no hay ventas hoy.</li>}
       </ul>
+      {comprobante && (
+        <div className="pos-modal-fondo" onClick={() => setComprobante(null)}>
+          <div className="pos-modal" role="dialog" aria-modal="true" aria-label="Comprobante" onClick={(e) => e.stopPropagation()}>
+            <pre className="pos-comprobante-vista">{comprobante.replace(/[*_]/g, "")}</pre>
+            <EnviarComprobante texto={comprobante} />
+            <button className="pos-btn claro" onClick={() => setComprobante(null)}>Cerrar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

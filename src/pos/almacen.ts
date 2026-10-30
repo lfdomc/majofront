@@ -4,11 +4,12 @@
  */
 import { api, ApiError } from "../api";
 
-export type ProductoPos = { id: number; nombre: string; precio: number; en_menu: boolean };
+export type ProductoPos = { id: number; nombre: string; precio: number; en_menu: boolean; foto?: string | null };
 export type Catalogo = {
-  negocio: { nombre: string; color: string; sinpe: string; sinpe_nombre: string };
+  negocio: { nombre: string; color: string; sinpe: string; sinpe_nombre: string; regimen?: string; contribuyente?: string;
+    cedula_tipo?: string; cedula?: string; actividad?: string; direccion?: string; telefono?: string; email?: string; leyenda?: string };
   iva_incluido: boolean; iva_pct: number;
-  categorias: { nombre: string; productos: ProductoPos[] }[];
+  categorias: { nombre: string; color?: string; productos: ProductoPos[] }[];
   actualizado: string;
 };
 export type ItemVenta = { receta_id: number; nombre: string; cantidad: number; precio_unitario: number };
